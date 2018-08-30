@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.SssmBusServiceImpl">
+    <!--登录滞留卡管理-->
+    <select id="isLoginSssm" parameterType="java.util.Map" resultType="int">
+        SELECT count(0) FROM SYS_USERINFO  WHERE LOGIN_NAME=#{loginName} AND PASSWORD=#{password}
+    </select>
+    <!--查询卡位置-->
+    <select id="getCardLocation" parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardLocationVO">
+        select c.cert_num as sfzh,c.name as xm ,c.BATCHNO as batchno,c.CARDSN as cardsn,b.boxno as boxNo,x.binno as binNo,
+         c.REGIS_STATUS as regisStatus,c.ORGADDRESS as orgAddress
+         from bus_rcm_card c
+         left join bus_rcm_box b on c.box_id = b.id
+         left join bus_rcm_bin x on b.bin_id = x.id
+         where c.cert_num=#{sfzh}
+        <if test="xm != null and xm != ''">
+            AND c.name=#{xm}
+        </if>
+        order by MOD_DATE
+    </select>
+    <!--查询滞留卡信息(只查询未发的卡)-->
+    <select id="getCardInfo" parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.RetentionCardVO">
+        select id,CERT_NUM as sfzh ,NAME as name,SO_CARD_NUM as sbkh,BANK_ACCOUNT,BANK_NAME,
+        CARDSN,STATUS,GRANT_TIME,GRANT_USER_ID,GRANT_NET_TYPE,
+        GRANT_NET_ID,BOX_ID,CARD_ID,ADD_USERNO,ADD_DATE,MOD_USERNO,
+        MOD_DATE,RETEN_TIME,REASON,OTHER_REASON,REGIS_STATUS as regisStatus,
+        orgaddress as orgName,phone,orgid as orgId,ADDUSER as adduser,make_card_time as makeCardTime
+        from bus_rcm_card WHERE 1=1
+        <if test="sfzh != null and sfzh != ''">
+            AND cert_num = #{sfzh}
+        </if>
+        <if test="sbkh != null and sbkh != ''">
+            AND SO_CARD_NUM=#{sbkh}
+        </if>
+    </select>
+
+    <!--查询卡片实时数量-->
+    <select id="getRetentionCount" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.RetentionCardBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.RetentionCardVO">
+        select *
+		  from (select aa.*, rownum rn
+		          from ( select h.NOW_COUNT as nowcount, c.box_id as boxId, c.CARDSN as cardSn
+        from bus_rcm_card c
+        left join bus_rcm_box h on c.box_id = h.id
+        left join bus_rcm_bin x on h.bin_id = x.id
+        where c.ORGADDRESS=#{orgName} and x.binno=#{binNo} and h.boxno=#{boxNo}  and batchno IS NULL
+        ORDER BY c.id  desc) aa)
+		 where rn = 1
+    </select>
+    <!--新增滞留卡、零散卡-->
+    <insert id="insertRetentionCard" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.RetentionCardBean">
+        INSERT INTO BUS_RCM_CARD (id,CERT_NUM,NAME,SO_CARD_NUM,BANK_ACCOUNT,BANK_NAME,CARDSN,STATUS,GRANT_TIME,GRANT_USER_ID,GRANT_NET_TYPE,
+        GRANT_NET_ID,BOX_ID,CARD_ID,ADD_USERNO,ADD_DATE,MOD_USERNO,MOD_DATE,RETEN_TIME,REASON,OTHER_REASON,
+        REGIS_STATUS,orgaddress,phone,orgid,ADDUSER,make_card_time)
+        VALUES (SEQ_RCM_CARD_ID.nextval,#{sfzh},#{xm},#{sbkh},#{bankAccount},#{bankName},#{cardSn},#{status},#{grantTime},#{grantUserId},#{grantNetType},
+        #{getGrantNetId},#{boxId},#{cardId},#{addUserNo},sysdate,#{modUserNo},#{modDate},to_date(#{retenTime},'yyyy-mm-dd hh24:mi:ss'),#{reason},#{otherReason},
+        #{regisStatus},#{orgName},#{phone},#{orgId},#{adduser},to_date(#{makeCardTime},'yyyy-mm-dd hh24:mi:ss'))
+    </insert>
+
+    <!--查询社保机构信息-->
+    <select id="getOrgInfo"  parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.so.entity.response.TSBSssmVO">
+        SELECT id as orgId ,address as orgAddress,SO_NAME as orgName FROM  BASIC_CONF_SOCIAL_ORG WHERE 1=1
+        <if test="orgId != null and orgId!=0">
+          and  id = #{orgId}
+         </if>
+        order by orgId
+    </select>
+
+    <!--新增精准发卡申领-->
+    <insert id="insertIssueApplyCard" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.IssueApplyBean">
+        INSERT  INTO BUS_PERSONAL_APPLY_DETAILS(ID,AGENT_NAME,NAME,CERT_NUM,RPHOTOPATH,QMPHOTOPATH,agentcertnum,LKWD,so_card_num,applytime,staus,soname)
+        VALUES(SEQ_PERSONAL_APPLY_DETAILS_ID.NEXTVAL,#{agentName},#{name},#{certNum},#{rphotoPath},#{qmphotoPath},#{agentcertNum},#{lkwd},#{soCardNum},sysdate,'0',#{soname})
+    </insert>
+
+    <!--查询卡片位置-->
+    <select id="getCardSN" parameterType="java.lang.String"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardLocationVO">
+        SELECT box_id as boxId,CARDSN  as cardsn FROM bus_rcm_card WHERE  SO_CARD_NUM=#{sbkh}
+    </select>
+
+    <!--更改滞留卡盒信息(增加数量)-->
+    <update id="updateRetentionBox" parameterType="java.lang.Long" >
+        UPDATE  BUS_RCM_BOX SET now_count=now_count+1,count=count+1  WHERE ID=#{boxId}
+    </update>
+    <!--更改滞留卡盒信息(减少数量)-->
+    <update id="updateLowRetentionBox" parameterType="java.lang.Long" >
+        UPDATE  BUS_RCM_BOX SET now_count=now_count-1  WHERE ID=#{boxId}
+    </update>
+    <!--更改滞留卡片信息-->
+    <update id="updateRetentionCard" parameterType="java.util.Map" >
+        UPDATE  BUS_RCM_CARD SET MOD_DATE=sysdate,
+        REGIS_STATUS=#{regisStatus},STATUS=#{status} WHERE SO_CARD_NUM=#{sbkh} and CERT_NUM=#{sfzh}
+
+    </update>
+
+    <!--更改滞留卡片信息(精准发卡后其余卡片位置)-->
+    <update id="updateIssueCard" parameterType="java.util.Map" >
+        update bus_rcm_card set  CARDSN=CARDSN-1
+        where BOX_ID=#{boxId} and REGIS_STATUS='1' and CARDSN &gt; #{cardsn}
+    </update>
+    <!--查询当前箱、盒、卡信息(最大的箱、盒、卡号)-->
+    <select id="getCurrentCardBoxBinInfo" parameterType="java.lang.String"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.ResultXhcVO">
+     select * from (select aa.*, rownum rn from (select h.now_count, c.CARDSN    as cardsn, x.BINNO     as binNo, x.id  as xid,
+		 h.bin_id as binId, c.box_id as boxId, x.count as xcount,  h.boxno, h.count as hcount,h.boxsn  from bus_rcm_card c  
+	 left join bus_rcm_box h on c.box_id = h.id left join bus_rcm_bin x  on x.id = h.bin_id
+	  where c.ORGADDRESS = #{orgName} and batchno IS NULL and c.regis_status = 1 order by to_number(x.binno) desc,
+	 to_number(h.boxno) desc, to_number(c.cardsn) desc) aa)  where rn = 1   
+    </select>
+    <!-- 插入箱子 -->
+    <insert id="insertBin" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.RetentionBinBean">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">  
+       		SELECT SEQ_RCM_BIN_ID.nextval from DUAL  
+   		</selectKey>
+        INSERT INTO BUS_RCM_BIN (id,BINNO,STATUS,COUNT,ADDUSERNO,ADDDATE,REMARK,STORE_ORG_TYPE,STORE_ORG_ID,STREAM_STATUS,ORGADDRESS)
+        VALUES (#{id},#{binNo},#{status},#{count},#{addUserNo},sysdate,#{remark},#{storeOrgType},#{storeOrgId},#{streamStatus},#{orgAddress})
+    </insert>
+    <!-- 插入盒子 -->
+    <insert id="insertBox" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.RetentionBoxBean">
+    	<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">  
+       		SELECT SEQ_RCM_BOX_ID.nextval from DUAL  
+   		</selectKey>
+        INSERT INTO BUS_RCM_BOX (id,BOXNO,STATUS,COUNT,NOW_COUNT,BOXSN,BIN_ID,STORE_ORG_TYPE,STORE_ORG_ID,ADDUSERNO,ADDDATE,BANK_ID,REMARK,REGIONAL_ID,STREAM_STATUS,ORGADDRESS)
+        VALUES (#{id},#{boxNo},#{status},#{count},#{nowCount},#{boxSn},#{binId},#{storeOrgType},#{storeOrgId},#{addUserNo},sysdate,#{bankId},#{remark},#{regionalId},#{streamStatus},#{orgAddress})
+    </insert>
+    <!--更改滞留卡箱信息(增加数量)-->
+    <update id="updateRetentionBin" parameterType="java.lang.Long" >
+    	update bus_rcm_bin set count = count+1 WHERE id = #{binId}
+    </update>
+    
+     <!-- 插入滞留卡领卡信息 -->
+    <insert id="cardGet" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardGetBean">
+        INSERT INTO BUS_RCM_GET (XM,SFZH,PHONE,ADDR_TYPE,ADDR_OLD,ADDR_NEW,CHANNELCODE)
+        VALUES (#{xm},#{sfzh},#{phone},#{addrType},#{addrOld},#{addrNew},#{channelcode})
+    </insert>
+    
+     <!--查询卡位置（排序方法与卡位置查询一致）-->
+    <select id="getCardNum" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardGetBean"
+            resultType="Map">
+        select c.so_card_num as SBKH,c.regis_status as REGISSTATUS
+        from bus_rcm_card c
+        where c.cert_num=#{sfzh} and c.name=#{xm}
+        order by MOD_DATE
+    </select>
+    
+    <!-- 孝感专用开始 -->
+    <!--是否符合补换卡申领条件  -->
+	<select id="canApply"  parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean" resultType="com.tecsun.sisp.adapter.modules.card.entity.response.SssmInfoVO">
+        SELECT t.NAME as name,t.CERT_NUM as certNum,b.APPLY_TIME as addDate,
+         b.CHANNEL as applyChannel FROM  BASIC_PERSON_INFO t,BUS_PERSONAL_APPLY b
+        <where >
+                 <!--<if test ="xm != null and xm != ''">
+                     and t.name=trim(#{xm})
+                 </if >
+				 -->
+                 <if test ="sfzh != null and sfzh != ''">
+                    and  t.cert_num  = trim(#{sfzh}) 
+                 </if >
+                    and  b.PERSON_ID = t.ID
+            </where >
+    </select>
+    
+    <!-- 查子级区县编码 -->
+    <select id="queryByParentId" parameterType="java.lang.String"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.request.AreaManage">
+		select t.ID as id,t.REGIONALCODE as areaId,
+		t.REGIONAL_NAME as areaName from BASIC_CONF_REGIONAL_INFO t where t.PARENTID = 
+		(select d.ID from BASIC_CONF_REGIONAL_INFO d where d.REGIONALCODE2=#{regionalcode})
+	</select>
+	
+	 <!-- 查区县编码 -->
+    <select id="queryById" parameterType="java.lang.String"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.request.AreaManage">
+		select t.ID as id,t.REGIONALCODE2 as areaId,
+		t.REGIONAL_NAME as areaName from BASIC_CONF_REGIONAL_INFO t where t.ID = #{id}
+	</select>
+	
+	<!-- 查询网点信息 -->
+	<select id="queryIssuingOrg" parameterType="java.util.Map"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.response.SocialOrgVO">
+		select SO_NAME as soName,id as id,address as address from BASIC_CONF_SOCIAL_ORG t where t.REGIONAL_ID=#{regionalId}
+	</select>
+    
+    
+    <insert id="insertBasePersonInfo" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.XgApplyBean">
+       <selectKey resultType="long" keyProperty="id" order="BEFORE">
+            select SEQ_BASIC_PERSION_INFO.nextval as id from dual
+        </selectKey>
+        INSERT INTO basic_person_info (ID, NAME, NAME_PINYIN, SEX, DOMICILE, CERT_ISSUING_ORG, CERT_TYPE,
+        CERT_NUM, CERT_VALIDITY, NATION, IS_FOREIGNER, BIRTHDAY, PHOTO_URL, ADDRESS, OTHER_ADDRESS, PHONE,
+        MOBILE, EMAIL, QQ, OCCUPATION, CULTURAL_LEVEL, WORKING_STATE, PREFERRED_BANK, ALTERNATIVE_BANK,
+        STATUS, MEDICARE_ACCOUNT, FINANCE_ACCOUNT, SO_PERSON_NUM, SO_NUM, HAS_DUPLICATE_SO_NUM, CARD_ID,
+        GROUP_INFO_ID, COMPANY_ADDR, IS_ENABLED, ADD_DATE, ADD_USER_ID, MOD_DATE, MOD_USER_ID, REMARK,
+        PERSONTYPE，PERSONSTATUS，ACCOUNTPROTIES，TSBADDRESS,ZIPCODE,GUOJI,COMPANY_NAME,COMPANY_NO) VALUES (#{id},#{name},#{namePinyin}, #{sex},
+        #{domicile},#{certIssuingOrg}, #{certType},#{certNum},#{certValidity},#{nation},#{isForeigner},to_date(#{birthday},'yyyy-mm-dd'),#{photoUrl},
+        #{address},#{otherAddress},#{phone},#{mobile},#{email},#{qq},#{occupation},#{culturalLevel},#{workingState},#{preferredBank},
+        #{alternativeBank},#{status},#{medicareAccount},#{financeAccount},#{soPersonNum},#{soNum},#{hasDuplicateSoNum},#{cardId},
+        #{groupInfoId},#{companyAddr},#{isEnabled},sysdate,#{addUserId},sysdate,#{modUserId},#{remark},#{personType},
+        #{personStatus},#{accountProties},#{TsbAddress},#{zipCode},#{guoji},#{companyName},#{companyNo})
+    </insert>
+    
+    <update id="updateBasePersonInfo" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.XgApplyBean">
+        UPDATE  basic_person_info SET PHOTO_URL= #{photoUrl},IS_SUCCESS_PHOTO=#{isSuccessPhoto} WHERE CERT_NUM=#{certNum}
+    </update>
+    
+    <insert id="insertBusPersonalApply" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.XgApplyBean">
+       <selectKey resultType="long" keyProperty="apId" order="BEFORE">
+            select SEQ_PERSONAL_APPLY_ID.nextval as apId from dual
+        </selectKey>
+        INSERT INTO BUS_PERSONAL_APPLY  (ID, PERSON_ID, AGENT_RELATION, AGENT_NAME, AGENT_SEX, AGENT_CERT_NO, AGENT_CERT_TYPE,
+        AGENT_PHONE, APPLY_TIME, APPLY_TYPE, APPLY_FORM_CODE,NET_TYPE,NET_ID,OPERATOR_ID,MAKE_CARD_TYPE,ISSUING_CARD_TYPE,
+        MAILING_ADDRESS,MAILING_COST,STATUS,ERROR_MSG,CARD_ISSUE_TIME,CARD_ISSUE_OPERATOR_ID,UPDATE_TIME,REMARK,CERT_PHOTO,
+        PROCESS_DATA_TYPE,BUS_DATA_TYPE,EX_BUS_ID,BANK_ID,CARD_ID,BANK_OPEN_TYPE,ISPACKAGE,ISWRITEDATA,CARD_ISSUE_NET_TYPE,
+        CARD_ISSUE_NET_ID,BANK_NET_ID,CHANNEL,sign_photo,DEVCODE,NET_CODE,NET_NAME) VALUES (#{apId},#{personId},#{agentRelation}, #{agentName},
+        #{agentSex},#{agentCertNo}, #{agentCertType},#{agentPhone},sysdate,#{applyType},#{applyFormCode},#{netType},#{netId},
+        #{operatorId},#{makeCardType},#{issuingCardType},#{mailingAddress},#{mailingCost},#{apStatus},#{errorMsg},#{cardIssueTime},
+        #{cardIssueOperatorId},sysdate,#{apRemark},#{certPhoto},#{processDataType},#{busDataType},#{exBusId},#{bankId},
+        #{apCardId},#{bankOpenType},#{ispackage},#{iswritedata},#{cardIssueNetType},#{cardIssueNetId},#{bankNetId},#{channel},#{signPhoto},#{devcode},#{netCode},#{netName})
+    </insert>
+    
+    <insert id="insertBusHisInfo" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.XgApplyBean" >
+        INSERT INTO BASIC_PERSON_BIZ_HIS (ID, PERSON_ID, BUS_TYPE, BUS_ID, BUS_CONTENT, BUS_START_TIME, BUS_END_TIME,
+        BUS_STATUS, ADD_DATE, OPERATOR_ID, REMARK) VALUES (SEQ_BASIC_PERSON_BIZ_HIS.nextval,#{personId},#{busType}, #{busId},
+        #{busContent},#{busStartTime}, #{busEndTime},#{busStatus},sysdate,#{hisOperatorId},#{hisRemark})
+    </insert>
+    
+    <!--   卡位置查询 -->
+    <select id="getCardwz" parameterType="java.lang.String"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.request.ResultBusMakeDetal">
+        select c.cert_num as certNum,c.name as name ,c.BATCHNO,c.CARDSN as cardsn,b.boxno as boxNo,x.binno as binNo, c.REGIS_STATUS,c.ORGADDRESS from bus_rcm_card c left join bus_rcm_box b on c.box_id = b.id left join bus_rcm_bin x on b.bin_id = x.id where c.cert_num=#{certNum}
+    </select>
+    
+    <!-- 孝感专用结束 -->
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.TestCsspServiceImpl">
+
+	<select id="getBankData" parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.BankDataVO"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.response.BankDataVO">
+		select * from test_bank_info t where 1=1
+		<if test="bankCode!=null and bankCode !=''">
+            and t.bank_code= #{bankCode}
+		</if><if test="parentCode!=null and parentCode !=''">
+            and t.parent_code= #{parentCode}
+		</if>
+	</select>
+
+    <select id="getPolicePhotos" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CsspPolicePhotoVO">
+		select t.sfzh,t.xm,t.photo from test_police_photo_info t where 1=1
+		<if test="sfzh!=null and sfzh !=''">
+            and t.sfzh= #{sfzh}
+		</if>
+        <if test="xm!=null and xm !=''">
+            and t.xm= #{xm}
+		</if>
+	</select>
+    <!--存入制卡进度-->
+    <insert id="insertCardProgress"
+            parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+        INSERT INTO TEST_CARD_PROGRESS (
+        xm,sfzh,applytime,status,UPDATE_TIME)
+        VALUES
+        (#{xm} ,#{sfzh} ,#{applytime} ,#{status} ,sysdate)
+    </insert>
+
+    <!--社保卡申请-修改制卡进度-->
+    <update id="updateCardProgress"
+            parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+    UPDATE TEST_CARD_PROGRESS SET UPDATE_TIME=sysdate
+        <if test="insuretime !=null and insuretime !=''">,insuretime=#{insuretime}</if>
+        <if test="citytime !=null and citytime !=''">,citytime=#{citytime}</if>
+        <if test="gettime !=null and gettime !=''">,gettime=#{gettime}</if>
+        <if test="status !=null and status !=''  ">,status=#{status}</if>
+        WHERE sfzh = #{sfzh}
+        <if test="sbkh !=null and sbkh !=''  ">and sbkh=#{sbkh}</if>
+        <if test="xm !=null and xm !=''  ">and xm=#{xm}</if>
+    </update>
+    <!--社保卡申请-修改制卡进度-->
+    <update id="updateCardProgressOfSfzh"
+            parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+        UPDATE TEST_CARD_PROGRESS SET UPDATE_TIME=sysdate
+        <if test="status !=null and status !=''  ">,status=#{status}</if>
+        <if test="citytime !=null and citytime !=''  ">,citytime=#{citytime}</if>
+        <if test="sbkh !=null and sbkh !=''  ">,sbkh=#{sbkh}</if>
+        WHERE sfzh = #{sfzh}
+        <if test="xm !=null and xm !=''  ">and xm=#{xm}</if>
+    </update>
+</mapper>

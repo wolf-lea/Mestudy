@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.finance.service.impl.FinanceServiceImpl">
+    <!--手机充值-->
+    <insert id="insertPhoneCharge" parameterType="com.tecsun.sisp.adapter.modules.finance.entity.response.PhoneChargeVO">
+        insert into t_yth_phone_recharge (TRADE_ID,sfzh,xm,sbkh,phone,create_time)
+        values(#{tradeId},#{sfzh},#{xm},#{sbkh},#{phone},#{createTime})
+    </insert>
+    <!--查询金融交易信息-->
+    <select id="selectFinaceTradeInfo" parameterType="com.tecsun.sisp.adapter.modules.finance.entity.request.FinanceTradeBean"
+            resultType="com.tecsun.sisp.adapter.modules.finance.entity.request.FinanceTradeBean">
+        select *  from T_YTH_FINANCE_TRADE tt where 1=1
+        <if test="tradeId!=null and tradeId!=''">
+            and trade_id=#{tradeId}
+        </if>
+        <if test="terminalId!=null and terminalId!=''">
+            and TERMINAL_ID=#{terminalId}
+        </if>
+        <if test="merchantId!=null and merchantId!=''">
+            and MERCHANT_ID=#{merchantId}
+        </if>
+        <if test="timeZd!=null and timeZd!=''">
+            and TIME_ZD=#{timeZd}
+        </if>
+        <if test="seqZd!=null and seqZd!=''">
+            and SEQ_ZD=#{seqZd}
+        </if>
+        <if test="busType!=null and busType!=''">
+            and BUS_TYPE=#{busType}
+        </if>
+        <if test="transType!=null and transType!=''">
+            and TRANS_TYPE=#{transType}
+        </if>
+        order by TRADE_ID desc
+    </select>
+
+
+    <!--新增金融交易信息-->
+    <insert id="insertFinanceTradeInfo" parameterType="com.tecsun.sisp.adapter.modules.finance.entity.request.FinanceTradeBean">
+        <selectKey keyProperty="tradeId" resultType="long" order="BEFORE">
+            select T_YTH_FINANCE_TRADE_ID_SEQ.NEXTVAL as tradeId from dual
+        </selectKey>
+        insert into T_YTH_FINANCE_TRADE (
+        trade_id,MSGTYPE,BUS_TYPE,AUXILIARY_TYPE,TRANS_TYPE,TERMINAL_ID,MERCHANT_ID,PATCH_NO,PAY_DATE,PAY_TIME,AMOUNT,SEQ_ZD,SEQ_BANK,
+        TIME_ZD,TIME_BK,CARD_NO_PAY,CARD_NO_REC,TRANS_RESULT,RECONCILIATION_RESULT,BANK_RT_TIME,RECONCILIATION_TIME,
+        CREATE_TIME,PRINT_TIME,PRINT_COUNT,PRINT_STATUS,PAY_TYPE,DEVICEID
+        )
+        values(
+        #{tradeId},#{msgtype},#{busType},#{auxiliaryType},#{transType},#{terminalId},#{merchantId},#{patchNo},to_date(#{payDate},'yyyy/mm/dd'), #{payTime},#{amount}, #{seqZd},#{seqBank},
+        #{timeZd},#{timeBk},#{cardNoPay},#{cardNoRec},#{transResult},#{reconciliationResult},#{bankRtTime},	#{reconciliationTime},
+        #{createTime},#{printTime},	#{printCount},#{printStatus},#{payType},#{deviceid}
+        )
+    </insert>
+
+
+    <!--修改金融交易信息-->
+    <update id="updateFinanceTradeInfo" parameterType="com.tecsun.sisp.adapter.modules.finance.entity.request.FinanceTradeBean">
+        update T_YTH_FINANCE_TRADE set update_time=#{updateTime}
+        <if test="seqBank!=null and seqBank!=''">
+            ,SEQ_BANK=#{seqBank}
+        </if>
+        <if test="timeBk!=null and timeBk!=''">
+            ,TIME_BK=#{timeBk}
+        </if>
+        <if test="transResult!=null and transResult!=''">
+            ,TRANS_RESULT=#{transResult}
+        </if>
+        <if test="correctReason!=null and correctReason!=''">
+            ,CORRECT_REASON=#{correctReason}
+        </if>
+        <if test="reconciliationResult!=null and reconciliationResult!=''">
+            ,RECONCILIATION_RESULT=#{reconciliationResult}
+        </if>
+        <if test="reconciliationTime!=null and reconciliationTime!=''">
+            ,RECONCILIATION_TIME=#{reconciliationTime}
+        </if>
+        <if test="bankRtTime!=null and bankRtTime!=''">
+            ,BANK_RT_TIME=#{bankRtTime}
+        </if>
+        <if test="printCount!=null and printCount!=''">
+            ,PRINT_COUNT=#{printCount}
+        </if>
+        <if test="printStatus!=null and printStatus!=''">
+            ,PRINT_STATUS=#{printStatus}
+        </if>
+        <if test="printTime!=null and printTime!=''">
+            ,PRINT_TIME=#{printTime}
+        </if>
+        <if test="payDate !=null and payDate !=''">
+            ,PAY_DATE=to_date(#{payDate},'yyyymmdd')
+        </if>
+        <if test="payTime !=null and payTime !=''">
+            ,PAY_TIME=#{payTime}
+        </if>
+        <if test="bankMsg !=null and bankMsg !=''">
+            ,BANK_MSG=#{bankMsg}
+        </if>
+        where 1=1
+        <if test="tradeId!=null and tradeId!=''">
+            and trade_id=#{tradeId}
+        </if>
+        <if test="merchantId!=null and merchantId!=''">
+            and MERCHANT_ID=#{merchantId}
+        </if>
+        <if test="terminalId!=null and terminalId!=''">
+            and TERMINAL_ID=#{terminalId}
+        </if>
+        <if test="patchNo!=null and patchNo!=''">
+            and PATCH_NO=#{patchNo}
+        </if>
+        <if test="seqZd!=null and seqZd!=''">
+            and SEQ_ZD=#{seqZd}
+        </if>
+    </update>
+
+
+
+    <!--查询设备多终端多商户关系-->
+    <select id="selectDeviceRelation" parameterType="com.tecsun.sisp.adapter.modules.finance.entity.request.DeviceRelationBean"
+            resultType="com.tecsun.sisp.adapter.modules.finance.entity.response.DeviceRelationVO">
+        select d.EQUIPMENT_NO,d.IMEI,d.SN,d.projectNo,r.terminalNo,r.tenantNo,r.bankCode,r.businessCode,r.isEnabled
+        from T_YTH_DEVICE d, T_YTH_DEVICERELATION r where  r.DEVICENO= d.DEVICENO and d.STATE='Y'
+        <if test='propertyType =="1"'>
+              and lower(d.EQUIPMENT_NO)=#{propertyCode}
+        </if>
+        <if test='propertyType =="2"'>
+              and lower(d.IMEI)=#{propertyCode}
+        </if>
+        <if test='propertyType =="3"'>
+              and lower(d.SN)=#{propertyCode}
+        </if>
+        <if test="projectNo!=null and projectNo!=''">
+              and d.projectNo=#{projectNo}
+        </if>
+        <if test="businessCode!=null and businessCode!=''">
+            and r.businessCode=#{businessCode}
+        </if>
+        <if test="bankCode!=null and bankCode!=''">
+            and r.bankCode=#{bankCode}
+        </if>
+        order by r.MODDATE desc
+    </select>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.train.service.impl.ApplyServiceImpl">
+
+    <!-- 新增报名信息-->
+    <insert id="addApply"
+            parameterType="com.tecsun.sisp.adapter.modules.train.entity.request.ApplyBean">
+        insert into t_yth_train_apply t (
+        t.SFZH,t.XM,t.PHONE,t.TRAIN_ID,t.ORGAN_NAME,
+        t.PROFESSION,t.GRADE,t.START_TIME,t.END_TIME,t.PERIODS,
+        t.CHANNEL)
+        values (#{sfzh},#{xm},#{phone},#{trainId},#{organName},
+        #{profession},#{grade},to_date(#{startTime}, 'dd-mm-yyyy'),to_date(#{endTime}, 'dd-mm-yyyy'),#{periods},
+        #{channelcode})
+    </insert>
+
+    <!-- 查询报名记录-->
+    <select id="selectApply"
+            parameterType="com.tecsun.sisp.adapter.modules.train.entity.request.ApplyBean"
+            resultType="com.tecsun.sisp.adapter.modules.train.entity.response.TrainApplyBean">
+        SELECT
+        t.APPLY_ID,t.XM,t.TRAIN_ID,t.ORGAN_NAME,
+        t.PROFESSION,t.GRADE,t.PERIODS,t.PHONE as applyPhone,
+        CONCAT(CONCAT(to_char(t.start_time,'yyyy"."MM"."dd') ,' - '), to_char(t.end_time,'yyyy"."MM"."dd')) classTime,
+		to_char(t.APPLY_TIME,'yyyy"."MM"."dd   hh24":"mi":"ss') as APPLY_TIME
+        FROM t_yth_train_apply t
+        WHERE t.SFZH = #{sfzh} AND t.xm = #{xm}
+        AND t.IS_CANCEL = 0
+        ORDER BY t.APPLY_TIME DESC
+    </select>
+
+    <!-- 判断是否存在报名记录-->
+    <select id="isApply"
+            parameterType="com.tecsun.sisp.adapter.modules.train.entity.request.ApplyBean"
+            resultType="int">
+        select count(*) from t_yth_train_apply t
+        where t.SFZH = #{sfzh} AND t.xm = #{xm} AND t.TRAIN_ID = #{trainId}
+        AND t.IS_CANCEL = 0
+    </select>
+</mapper>

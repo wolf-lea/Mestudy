@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--添加调度任务 动态读取config.properties，配置对应的class -->
+
+
+
+    <bean id="uploadConfig" class="com.tecsun.sisp.adapter.common.util.Config"/>
+
+
+
+    <!-- 配置调度的具体执行方法 -->
+
+    <bean id="execution" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+
+        <property name="targetObject" ref="uploadConfig"/>
+
+        <property name="targetMethod" value="todo"/>
+
+        <property name="concurrent" value="true"/>
+
+    </bean>
+
+
+
+    <!-- 配置调度执行的触发时间 -->
+
+    <bean id="exeTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+
+        <property name="jobDetail" ref="execution"/>
+
+        <property name="cronExpression">
+
+            <value>0 0/1 * * * ?</value>
+
+        </property>
+
+    </bean>
+
+
+
+    <!-- 调度工厂，唯一，调度任务添加到list中 -->
+
+    <bean id="scheduler"  class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+
+        <property name="triggers">
+
+            <list>
+
+                <ref bean="exeTrigger"/>
+
+            </list>
+
+        </property>
+
+    </bean>
+
+ <!--  &lt;!&ndash; 添加调度任务 上传本地个人申领数据至第三方，配置对应的class &ndash;&gt; -->
+
+    <bean id="UploadApplyCard" class="com.tecsun.sisp.adapter.modules.card.controller.schedule.UploadScedule"/>
+
+ 
+
+   <!--&lt;!&ndash; 配置调度的具体执行方法 &ndash;&gt; -->
+
+    <bean id="execution2" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+
+        <property name="targetObject" ref="UploadApplyCard"/>
+
+        <property name="targetMethod" value="upload"/>
+
+        <property name="concurrent" value="true"/>
+
+    </bean>
+
+
+
+   <!--&lt;!&ndash; 配置调度执行的触发时间 &ndash;&gt; -->
+
+    <bean id="exeTrigger2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+
+        <property name="jobDetail" ref="execution2"/>
+
+        <property name="cronExpression">
+
+            <value>0 */10 * * * ?</value>
+
+        </property>
+
+    </bean>
+
+
+
+   <!--  &lt;!&ndash; 调度工厂，唯一，调度任务添加到list中 &ndash;&gt; -->
+
+    <bean id="scheduler2"  class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+
+        <property name="triggers">
+
+            <list>
+
+                <ref bean="exeTrigger2"/>
+
+            </list>
+
+        </property>
+
+    </bean>
+
+
+
+
+
+</beans>
+

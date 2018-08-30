@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.CssCardServiceImpl">
+    
+  <!--   卡位置查询 -->
+    <select id="getCardwz" parameterType="java.lang.String"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.request.ResultBusMakeDetal">
+        select c.cert_num as certNum,c.name as name ,c.BATCHNO,c.CARDSN as cardsn,b.boxno as boxNo,x.binno as binNo, c.REGIS_STATUS,c.ORGADDRESS from bus_rcm_card c left join bus_rcm_box b on c.box_id = b.id left join bus_rcm_bin x on b.bin_id = x.id where c.cert_num=#{certNum}
+    </select>
+</mapper>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.his.service.impl.HisServiceImpl">
+
+    <!--查询所有医院信息-->
+    <select id="getAllHisInfo"  parameterType="com.tecsun.sisp.adapter.modules.his.entity.request.HisBean"
+            resultType="com.tecsun.sisp.adapter.modules.his.entity.response.AllHisInfoVO">
+        select * from T_YTH_HIS_ALL_INFO t where  1=1
+        <if test="hospitalName!=null and hospitalName!=''">
+            and hospital_name like '%${hospitalName}%'
+        </if>
+        <if test="hospitalArea!=null and hospitalArea!=''">
+            and hospital_area like '%${hospitalArea}%'
+        </if>
+        order by ORDERNUM asc
+    </select>
+
+     <!--查询医院业务记录-->
+    <select id="getHisBusRecord"  parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.his.entity.response.HisOrderDetailVO">
+        select hisbus_id as hisbusId,hospital_id as hospitalId,hospital_name as hospitalName,dept_code as deptCode,
+        dept_name as deptName,doctor_no as doctorNo,doctor_name as doctorName,clinic_label as clinicLabel,time_interval as timeInterval,
+        to_char(clinic_date,'yyyy-mm-dd') as clinicDate,registration_fee as registrationFee,clinic_fee as clinicFee,amount_fee as amountFee,
+        patient_idcard as patientIdcard,patient_name as patientName,order_id as orderId,order_status as orderStatus,
+        create_time as createTime,doctor_title as doctorTitle
+        from t_yth_his_bus_record t where patient_idcard=#{patientIdcard} and patient_name=#{patientName}
+        <if test="hisbusId!=null and hisbusId!='' and hisbusId!=0">
+            and hisbus_id=#{hisbusId}
+        </if>
+        <if test="hospitalId!=null and hospitalId!=''">
+        and HOSPITAL_ID=#{hospitalId}
+        </if>
+        <if test="deptCode!=null and deptCode!=''">
+        and DEPT_CODE=#{deptCode}
+        </if>
+        <if test="timeInterval!=null and timeInterval!=''">
+        and time_interval=#{timeInterval}
+        </if>
+        <if test="orderId!=null and orderId!=''">
+        and order_id=#{orderId}
+        </if>
+        <if test="orderType!=null and orderType!=''">
+        and ORDER_TYPE=#{orderType}
+        </if>
+        <if test="orderStatus!=null and orderStatus!=''">
+        and order_status=#{orderStatus}
+        </if>
+        <if test="orderStatusArray!=null and orderStatusArray!=''">
+        and order_status in (${orderStatusArray})
+        </if>
+        <if test="clinicDate!=null and clinicDate!=''">
+            and  clinic_date=to_date(#{clinicDate},'yyyy-mm-dd')
+        </if>
+        <if test="startDate!=null and startDate!=''">
+            and t.clinic_date &gt;= to_date(#{startDate},'yyyy-mm-dd')
+        </if>
+        <if test="endDate!=null and endDate!=''">
+            and t.clinic_date &lt;= to_date(#{endDate},'yyyy-mm-dd')
+        </if>
+        order by UPDATE_TIME desc
+    </select>
+    <!--新增医院业务记录-->
+    <insert id="insertHisBusRecord"
+            parameterType="com.tecsun.sisp.adapter.modules.his.entity.request.AppointBean">
+        <selectKey resultType="long" keyProperty="hisbusId" order="BEFORE">
+            select t_yth_his_bus_record_id_seq.nextVal as hisbusId from dual
+        </selectKey>
+        INSERT INTO t_yth_his_bus_record(
+        hisbus_id,hospital_id,hospital_name,dept_code,dept_name,doctor_no,doctor_name,order_id,
+        clinic_date,time_interval,clinic_label,registration_fee,clinic_fee,amount_fee,card_type,
+        patient_idcard,patient_name,patient_phone,patient_sex,patient_birthday,order_status,ORDER_TYPE,doctor_title)
+        VALUES
+        (
+       #{hisbusId},#{hospitalId},#{hospitalName},#{deptCode},#{deptName},#{doctorNo},#{doctorName}, #{orderId},
+       to_date(#{clinicDate},'yyyy-MM-dd'),#{timeInterval},#{clinicLabel},#{registrationFee},#{clinicFee},#{amountFee},#{cardType},
+       #{patientIdcard},#{patientName},#{patientPhone},#{patientSex},to_date(#{patientBirthday},'yyyy-MM-dd'),#{orderStatus},#{orderType},#{doctorTitle}
+        )
+    </insert>
+
+    <!--修改医院业务信息-->
+    <update id="updateHisBusRecord"   parameterType="java.util.Map" >
+        update t_yth_his_bus_record t set update_time=sysdate
+        <if test="orderStatus!=null and orderStatus!=''">
+            ,  order_status=#{orderStatus}
+        </if>
+        where 1=1 and HOSPITAL_ID=#{hospitalId} and order_id=#{orderId}
+        <if test="deptCode!=null and deptCode!=''">
+            and DEPT_CODE=#{deptCode}
+        </if>
+        <if test="doctorNo!=null and doctorNo!=''">
+            and DOCTOR_NO=#{doctorNo}
+        </if>
+        <if test="clinicLabel!=null and clinicLabel!=''">
+            and CLINIC_LABEL=#{clinicLabel}
+        </if>
+        <if test="orderId!=null and orderId!=''">
+            and order_id=#{orderId}
+        </if>
+        <if test="hisbusId!=null and hisbusId!=''">
+            and hisbus_id=#{hisbusId}
+        </if>
+    </update>
+    <!--新增医院预约信息-->
+    <insert id="insertHisAppointInfo"
+            parameterType="com.tecsun.sisp.adapter.modules.his.entity.request.AppointOrderBean">
+        <selectKey resultType="long" keyProperty="hisappointId" order="BEFORE">
+            select t_yth_his_appoint_info_id_seq.nextVal as hisappointId from dual
+        </selectKey>
+        INSERT INTO t_yth_his_appoint_info(
+        HISAPPOINT_ID,hisbus_id,order_id,appoint_time,appoint_status,fail_reason,channelcode)
+        VALUES
+        (
+        #{hisappointId},#{hisbusId},#{orderId}, to_date(#{appointTime},'yyyy-mm-dd hh24:mi:ss'),#{appointStatus},#{failReason},#{channelcode}
+        )
+    </insert>
+
+    <!--新增医院取消挂号信息-->
+    <insert id="insertHisCancelOrder"
+            parameterType="com.tecsun.sisp.adapter.modules.his.entity.request.CancelOrderBean">
+        <selectKey resultType="long" keyProperty="hiscancelId" order="BEFORE">
+            select t_yth_his_cancelorder_info_seq.nextVal as hiscancelId from dual
+        </selectKey>
+        INSERT INTO t_yth_his_cancelorder_info(
+        hiscancel_id,hisbus_id,order_id,cancel_time,cancel_status,fail_reason,channelcode)
+        VALUES
+        (
+        #{hiscancelId},#{hisbusId},#{orderId},to_date(#{cancelTime},'yyyy-mm-dd hh24:mi:ss'),#{cancelStatus},#{failReason},#{channelcode}
+        )
+    </insert>
+</mapper>

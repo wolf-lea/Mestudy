@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.cyt.service.impl.SettleServiceImpl">
+    <!--插入门诊治疗信息-->
+    <insert id="insertSettleAccounts"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.ChargeInformationBean">
+        insert into T_YTH_CYT_SETTLEACCOUNTS
+        (JZLSH,JSLSH,BXFS,SFZH,XM,JBBM,
+        JBMC,NUM,BXJE,ZFJE,TCYE,ZJE,JSSJ,CHANNEL_CODE
+        ,JSZT,HZZT,JSZH,sbkh)
+        values(
+        #{jzlsh},#{jslsh},#{bxfs},#{sfzh},#{xm},#{jbbm},
+        #{jbmc},#{num},#{bxje},#{zfje},#{tcye},#{zje},to_date(#{jssj},'yyyy-MM-dd HH24:mi:ss'),#{channelcode}
+        ,0,0,#{zh},#{sbkh})
+    </insert>
+
+    <!--更新结算、汇总状态-->
+    <update id="updateSettleAccounts" parameterType="Map">
+    UPDATE T_YTH_CYT_SETTLEACCOUNTS t SET t.id=t.id
+        <if test="jszt != null and jszt == '1'.toString()">
+            ,t.JSQXZH = #{zh}
+            ,t.JSZT = #{jszt}
+            ,t.JSQXSJ = #{jsqxsj}
+            WHERE t.JSLSH = #{jslsh}
+        </if>
+        <if test="hzzt != null and hzzt == '1'.toString()">
+            ,t.HZZH = #{zh}
+            ,t.HZLSH = #{hzlsh}
+            ,t.HZZT = #{hzzt}
+            ,t.HZSJ = #{hzsj}
+            WHERE t.JSLSH = #{jslsh}
+        </if>
+        <if test="hzzt != null and hzzt == '2'.toString()">
+            ,t.HZQXZH = #{zh}
+            ,t.HZZT = #{hzzt}
+            ,t.HZQXSJ = #{hzqxsj}
+            WHERE t.HZLSH = #{hzlsh}
+        </if>
+
+    </update>
+
+    <!-- 查询已结算记录 -->
+    <select id="selectSettleAccounts"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.AccountQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.cyt.entity.response.AccountQueryOutBean">
+        select id,jslsh,bxfs,to_char(zfje,'fm99999990.00') as zfje,sfzh,
+        xm,sbkh,jbbm,jbmc,to_char(bxje,'fm99999990.00') as bxje,
+        jssj,jsqxsj,jszt,hzzt,to_char(zje,'fm99999990.00') as zje
+        from T_YTH_CYT_SETTLEACCOUNTS t
+        where t.jszt = 0
+            and (t.hzzt = 0 OR t.hzzt = 1)
+        <if test="jslsh == null">
+            AND t.jszh = #{zh}
+        </if>
+        <if test="jslsh != null and jslsh != ''">
+            AND t.jslsh= #{jslsh}
+        </if>
+        <if test="sfzh != null and sfzh != ''">
+            AND t.sfzh= #{sfzh}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND to_char(t.jssj,'yyyymm') &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND to_char(t.jssj,'yyyymm') &lt;= #{endDate}
+        </if>
+        ORDER BY t.jssj DESC
+    </select>
+
+
+    <!-- 查询未汇总记录 -->
+    <select id="selectCollect"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.AccountQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.cyt.entity.response.AccountQueryOutBean">
+        select id,jslsh,bxfs,to_char(zfje,'fm99999990.00') as zfje,sfzh,
+        xm,sbkh,jbbm,jbmc,to_char(bxje,'fm99999990.00') as bxje,
+        jssj,jsqxsj,jszt,hzzt,to_char(zje,'fm99999990.00') as zje
+        from T_YTH_CYT_SETTLEACCOUNTS t
+        where t.jszt = 0
+        and t.hzzt = 0
+        <if test="jslsh == null">
+            AND t.jszh = #{zh}
+        </if>
+        <if test="jslsh != null and jslsh != ''">
+            AND t.jslsh= #{jslsh}
+        </if>
+        <if test="sfzh != null and sfzh != ''">
+            AND t.sfzh= #{sfzh}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND to_char(t.jssj,'yyyymm') &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND to_char(t.jssj,'yyyymm') &lt;= #{endDate}
+        </if>
+        ORDER BY t.jssj DESC
+    </select>
+
+    <!-- 查询任意记录 -->
+    <select id="selectAllSettleAccounts"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.AccountQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.cyt.entity.response.AccountQueryOutBean">
+        select id,jslsh,bxfs,to_char(zfje,'fm99999990.00') as zfje,sfzh,
+        xm,sbkh,jbbm,jbmc,to_char(bxje,'fm99999990.00') as bxje,
+        jssj,jsqxsj,jszt,hzzt,to_char(zje,'fm99999990.00') as zje
+        from T_YTH_CYT_SETTLEACCOUNTS t
+        where 1=1
+        <if test="jslsh == null and hzlsh == null">
+            AND t.jszh = #{zh}
+        </if>
+        <if test="hzlsh != null and hzlsh != ''">
+            AND t.hzlsh= #{hzlsh}
+        </if>
+        <if test="jslsh != null and jslsh != ''">
+            AND t.jslsh= #{jslsh}
+        </if>
+        <if test="sfzh != null and sfzh != ''">
+            AND t.sfzh= #{sfzh}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND to_char(t.jssj,'yyyymm') &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND to_char(t.jssj,'yyyymm') &lt;= #{endDate}
+        </if>
+        ORDER BY t.jssj DESC
+    </select>
+
+
+</mapper>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.sbjf.service.impl.PayReverseRecordServiceImpl">
+
+    <!--插入冲正记录 -->
+    <insert id="insertReverseRecord" parameterType="com.tecsun.sisp.adapter.modules.sbjf.entity.inputBean.FeedbackBean">
+        <selectKey resultType="long" keyProperty="prrId" order="BEFORE">
+            select  T_YTH_PAY_REVERSE_RECORD_SEQ.Nextval from dual
+        </selectKey>
+       insert into  T_YTH_PAY_REVERSE_RECORD VALUES (#{prrId},#{flowNum},#{status})
+    </insert>
+
+</mapper>

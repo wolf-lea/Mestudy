@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.cyt.service.impl.SettleServiceImpl">
+    <!--插入门诊治疗信息-->
+    <insert id="insertMedicine"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.MedicineBean">
+        insert into T_YTH_CYT_MEDICINE
+        (JZLSH,FYXH,SFXMBH,SFXMMC,SL,
+        DJ,JE)
+        values(
+        #{jzlsh},#{fyxh},#{sfxmbm},#{sfxmmc},#{sl},
+        #{dj},#{je})
+    </insert>
+
+</mapper>

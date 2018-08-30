@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.his.service.impl.TestHisServiceImpl">
+
+
+    <select id="getHospitalDetail"   parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.his.entity.response.HisDetailVO">
+        select * from TEST_HIS_INFO t where 1=1
+        and HOSPITAL_ID=#{hospitalId}
+    </select>
+
+    <select id="getDeptment"   parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.his.entity.response.DeptmentVO">
+        select * from test_his_dept_info t where 1=1
+        and HOSPITAL_ID=#{hospitalId}
+        <if test="deptCode!=null and deptCode!=''">
+            and parent_Code=#{deptCode}
+        </if>
+        <if test="deptCode==null or deptCode==''">
+            and parent_Code is null  or parent_Code='0'
+        </if>
+        order by ORDER_NUM
+    </select>
+
+    <select id="getDeptmentDetail"   parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.his.entity.response.DeptmentVO">
+        select * from test_his_dept_info t where 1=1
+        and HOSPITAL_ID=#{hospitalId} and DEPT_CODE=#{deptCode}
+    </select>
+
+    <select id="getDoctor"   parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.his.entity.response.DoctorVO">
+        select distinct t.hospital_id,t.hospital_name,t.dept_code,t.dept_name,t.doctor_no,
+        t.doctor_name,t.doctor_title,t.doctor_picture,t.order_num,t.create_time,
+        t.update_time,p.clinicfee,dbms_lob.substr(t.doctor_des,4000) as doctor_des
+        from TEST_HIS_DOCT_INFO t,TEST_HIS_APPOINT_INFO p where 1=1
+        and t.HOSPITAL_ID=#{hospitalId} and t.DEPT_CODE=#{deptCode}
+        and p.HOSPITAL_ID=t.HOSPITAL_ID and p.DEPT_CODE=t.DEPT_CODE
+        <if test="clinicDate!=null and clinicDate!=''">
+          and (t.doctor_no in (select o.doctor_no from TEST_HIS_APPOINT_INFO o where o.CLINIC_DATE=to_date(#{clinicDate},'yyyy-mm-dd')))
+        </if>
+        order by ORDER_NUM
+    </select>
+
+    <!--
+        select * from TEST_HIS_DOCT_INFO t where 1=1
+        and HOSPITAL_ID=#{hospitalId} and DEPT_CODE=#{deptCode}
+        order by ORDER_NUM
+
+    -->
+
+    <select id="getDoctorDetail"   parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.his.entity.response.DoctorVO">
+        select * from TEST_HIS_DOCT_INFO t where 1=1
+        and HOSPITAL_ID=#{hospitalId}  and DEPT_CODE=#{deptCode} and DOCTOR_NO=#{doctorNo}
+    </select>
+
+    <select id="getDoctorSchedule"   parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.his.entity.response.DoctorScheduleVO">
+        select
+        hospital_id,dept_code,doctor_no,to_char(clinic_date,'yyyy-mm-dd') as clinicDate ,time_interval,cliniclabel,
+        cliniclabel_flag,registrationfee,clinicfee,registrationlimits,appointamount
+        from TEST_HIS_APPOINT_INFO t where 1=1
+        and HOSPITAL_ID=#{hospitalId} and DEPT_CODE=#{deptCode} and DOCTOR_NO=#{doctorNo}
+        <if test="clinicLabel!=null and clinicLabel!=''">
+            and  CLINICLABEL=#{clinicLabel}
+        </if>
+        <if test="timeInterval!=null and timeInterval!=''">
+            and  TIME_INTERVAL=#{timeInterval}
+        </if>
+        <if test="clinicDate!=null and clinicDate!=''">
+            and  CLINIC_DATE=to_date(#{clinicDate},'yyyy-mm-dd')
+        </if>
+        <if test="clinicDate==null or clinicDate==''">
+            and  CLINIC_DATE &gt; sysdate and CLINIC_DATE &lt;=(sysdate + 8)
+         </if>
+        order by CLINIC_DATE asc,TIME_INTERVAL asc
+    </select>
+
+    <update id="updateAppoint"   parameterType="java.util.Map" >
+        update TEST_HIS_APPOINT_INFO t set update_time=sysdate
+        <if test="appointAmount!=null and appointAmount!=''">
+          ,  APPOINTAMOUNT=#{appointAmount}
+        </if>
+        <if test="clinicLabel_flag!=null and clinicLabel_flag!=''">
+          ,  clinicLabel_flag=#{clinicLabelFlag}
+        </if>
+        where 1=1
+               and HOSPITAL_ID=#{hospitalId}  and DEPT_CODE=#{deptCode} and DOCTOR_NO=#{doctorNo}
+               and CLINICLABEL=#{clinicLabel}
+    </update>
+    <!--获取单条订单记录-->
+    <select id="getHisOrderStatus"  parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.his.entity.response.HisOrderDetailVO">
+        select * from t_yth_his_bus_record t where patient_idcard=#{patientIdcard}
+        and patient_name=#{patientName}
+        <if test="hospitalId!=null and hospitalId!=''">
+            and HOSPITAL_ID=#{hospitalId}
+        </if>
+        <if test="deptCode!=null and deptCode!=''">
+            and DEPT_CODE=#{deptCode}
+        </if>
+        <if test="orderId!=null and orderId!=''">
+            and order_id=#{orderId}
+        </if>
+        <if test="orderType!=null and orderType!=''">
+            and ORDER_TYPE=#{orderType}
+        </if>
+        <if test="orderStatus!=null and orderStatus!=''">
+            and order_status=#{orderStatus}
+        </if>
+        order by UPDATE_TIME desc
+    </select>
+</mapper>

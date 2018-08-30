@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.cyt.service.impl.TestSettleServiceImpl">
+    <!--插入门诊治疗信息-->
+    <insert id="testInsertSettleAccounts"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.ChargeInformationBean">
+        insert into TEST_YTH_CYT_SETTLEACCOUNTS
+        (JZLSH,JSLSH,BXFS,SFZH,XM,JBBM,
+        JBMC,NUM,BXJE,ZFJE,TCYE,ZJE,JSSJ
+        ,JSZT,HZZT)
+        values(
+        #{jzlsh},#{jslsh},#{bxfs},#{sfzh},#{xm},#{jbbm},
+        #{jbmc},#{num},#{bxje},#{zfje},#{tcye},#{zje},to_date(#{jssj},'yyyy-MM-dd HH24:mi:ss')
+        ,0,0)
+    </insert>
+
+    <!--更新结算、汇总状态-->
+    <update id="testUpdateSettleAccounts" parameterType="Map">
+        UPDATE TEST_YTH_CYT_SETTLEACCOUNTS t SET t.id = t.id
+        <if test="jszt != null and jszt == '1'.toString()">
+            ,t.JSZT = #{jszt}
+            ,t.JSQXSJ = sysdate
+            WHERE t.JSLSH = #{jslsh}
+        </if>
+        <if test="hzzt != null and hzzt == '1'.toString()">
+            ,t.HZLSH = #{hzlsh}
+            ,t.HZZT = #{hzzt}
+            ,t.HZSJ = sysdate
+            WHERE t.JSLSH = #{jslsh}
+        </if>
+        <if test="hzzt != null and hzzt == '2'.toString()">
+            ,t.HZZT = #{hzzt}
+            ,t.HZQXSJ = sysdate
+            WHERE t.HZLSH = #{hzlsh}
+        </if>
+    </update>
+
+    <!--插入汇总信息-->
+    <insert id="testInsertCollect"
+            parameterType="java.util.Map">
+        insert into TEST_YTH_CYT_COLLECT
+        (BYLJGBM,BYLJGMC,SJYLJGBM,SJYLJGMC,HZLSH
+        ,HZSJ,HZRC,JEHJ,YBKKJE,TCZFJE
+        ,JBR,YHZH)
+        values(
+        #{byljgbm},#{byljgmc},#{sjyljgbm},#{sjyljgmc},#{hzlsh}
+        ,#{hzsj},#{hzrc},#{jehj},#{ybkkje},#{tczfje}
+        ,#{jbr},#{yhzh})
+    </insert>
+
+    <!-- 查询汇总记录 -->
+    <select id="testSelectCollect"
+            parameterType="com.tecsun.sisp.adapter.modules.cyt.entity.request.AccountQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.cyt.entity.response.CollectBean">
+        select byljgmc,hzlsh,hzsj,hzrc,to_char(jehj,'fm99999990.00') as jehj,
+        to_char(ybkkje,'fm99999990.00') as ybkkje,to_char(tczfje,'fm99999990.00') as tczfje,jbr,yhzh,hzzt
+        from TEST_YTH_CYT_COLLECT t
+        where 1=1
+        <if test="hzlsh == null or hzlsh == ''">
+            and t.byljgbm = #{jgbm} or t.sjyljgbm = #{jgbm}
+        </if>
+        <if test="hzlsh != null and hzlsh != ''">
+            AND t.hzlsh = #{hzlsh}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND to_char(t.hzsj,'yyyymm') &gt;=  #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND to_char(t.hzsj,'yyyymm') &lt;= #{endDate}
+        </if>
+        ORDER BY t.hzsj DESC
+    </select>
+
+    <!--根据汇总流水号更新汇总状态-->
+    <update id="updateCollect" parameterType="Map">
+        UPDATE TEST_YTH_CYT_COLLECT t SET hzzt = 2
+        WHERE t.HZLSH = #{hzlsh}
+    </update>
+
+</mapper>

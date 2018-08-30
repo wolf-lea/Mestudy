@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.TestCardInfoServiceImpl">
+
+    <select id="getCardProgress" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardInfoBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+		SELECT t.sfzh,t.xm,t.sbkh,t.applytime,t.banktime,t.insuretime,t.citytime,t.gettime,t.status FROM TEST_CARD_PROGRESS t
+		WHERE t.sfzh = #{sfzh} AND t.xm= #{xm}
+		order by t.applytime desc
+	</select>
+
+    <select id="setLoss" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardInfoBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardInfoVO">
+		SELECT t.sfzh,t.xm,t.sbkh,t.status FROM TEST_CARD_FUNCTION t
+		WHERE t.sfzh = #{sfzh} AND t.xm= #{xm}
+		and t.function='1'
+	</select>
+
+    <select id="setHanging" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardInfoBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardInfoVO">
+		SELECT t.sfzh,t.xm,t.sbkh,t.status FROM TEST_CARD_FUNCTION t
+		WHERE t.sfzh = #{sfzh} AND t.xm= #{xm} 
+		  and t.function='2'
+		<if test="sbkh !=null and sbkh !=''">
+            and t.sbkh= #{sbkh}
+        </if>
+	</select>
+
+    <select id="setStart" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardInfoBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardInfoVO">
+		SELECT t.sfzh,t.xm,t.sbkh,t.status FROM TEST_CARD_FUNCTION t
+		WHERE t.sfzh = #{sfzh} AND t.xm= #{xm}
+		and t.function='3'
+		<if test="sbkh !=null and sbkh !=''">
+            and t.sbkh= #{sbkh}
+        </if>
+	</select>
+
+
+</mapper>

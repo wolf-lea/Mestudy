@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.DetectServiceImpl">
+    <!--卡修复-查询之前是否存在卡检测-->
+    <select id="isExistCardDect" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardDetectBean"
+            resultType="long">
+        SELECT count(0) FROM T_YTH_CARD_DETECTION t
+        where  t.detect_id= #{detectId} and t.sfzh = #{sfzh}
+        <if test="xm != null and xm != ''">
+            AND t.xm = #{xm}
+        </if>
+        order by create_time desc
+    </select>
+
+    <!--卡检测-存入社保卡检测表-->
+    <insert id="saveCardDect"
+		parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardDetectBean">
+        <selectKey resultType="long" keyProperty="detectId" order="BEFORE">
+            select T_YTH_CARD_DETECTION_ID_SEQ.nextVal as detectId from dual
+        </selectKey>
+		INSERT INTO T_YTH_CARD_DETECTION(
+        detect_id,mark_no,sfzh,xm,sbkh,detect_date,detect_result,detect_info,device_id,create_time
+        )
+        VALUES(
+        #{detectId},#{markNo},#{sfzh},#{xm},#{sbkh},sysdate,#{detectResult},#{detectInfo},#{deviceid},sysdate
+        )
+	</insert>
+
+    <!--卡修复-更改社保卡检测表-->
+	<update id="saveCardRepair" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardDetectBean">
+		UPDATE T_YTH_CARD_DETECTION SET UPDATE_TIME=sysdate
+        <if test="repairResult !=null and repairResult !=''">,REPAIR_RESULT=#{repairResult}</if>
+        <if test="repairInfo !=null and repairInfo !=''">,REPAIR_INFO=#{repairInfo}</if>
+        where  detect_id= #{detectId} and sfzh = #{sfzh}
+    </update>
+	
+
+	 <!--(模拟)社保卡基本信息列表-->
+	<select id="testGetCardBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CardDetectBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardBasicVO">
+       select * from TEST_CARD_BASIC_INFO t
+		 where t.sfzh = #{sfzh}
+        <if test="xm != null and xm != ''">
+            AND t.xm = #{xm}
+        </if>
+    </select>
+</mapper>
