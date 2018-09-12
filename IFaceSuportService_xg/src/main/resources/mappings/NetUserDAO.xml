@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.iface.server.model.service.NetUserServiceImpl">
+
+    <select id="getSequence"  resultType="long">
+        select t_bank_seq.nextval from dual
+    </select>
+
+    <update id="updateMobile" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean">
+        update t_az01b set mobile=#{newPhoneNo} where cernum=#{id}
+        <if test="name != '' and name != null">
+          and name=#{name}
+        </if>
+    </update>
+
+    <update id="updateNetpwd" parameterType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO">
+        update t_az01b t set t.net_password=#{netpassword}, t.is_update='1' where t.cernum=#{userName}
+    </update>
+
+    <select id="userLogin" parameterType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO" resultType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO">
+        select t.cardno,t.name,t.card_status,t.person_status,t.cernum,t.is_update isUpdate,t.net_password netpassword from t_az01b t where t.cernum=#{cernum}
+        <if test="name != '' and name != null">
+            and t.name=#{name}
+        </if>
+        
+
+    </select>
+
+    <!--<select id="userLogin" parameterType="string" resultType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO">-->
+        <!--select t.cardno,t.name,t.card_status,t.person_status,t.cernum,t.is_update isUpdate,t.net_password netpassword from t_az01b t where t.cernum=#{cernum}-->
+    <!--</select>-->
+
+    <select id="getPolicyTitleCount" parameterType="com.tecsun.sisp.iface.common.vo.PolicyVO" resultType="long">
+        select count(1) as total from T_POLICY t where t.type in
+         <foreach collection="types" item="types" open="(" separator="," close=")">
+            #{types}
+        </foreach>
+    </select>
+
+    <select id="getPolicyTitleList" parameterType="com.tecsun.sisp.iface.common.vo.PolicyVO" resultType="com.tecsun.sisp.iface.common.vo.PolicyVO">
+        select t.id, t.title,to_char(t.publish_date,'yyyy-MM-dd') publishDate,t.district,t.fileno fileNo from T_POLICY t where t.type in
+         <foreach collection="types" item="types" open="(" separator="," close=")">
+            #{types}
+        </foreach>
+        order by id desc
+    </select>
+
+    <resultMap id="PolicyContext" type="com.tecsun.sisp.iface.common.vo.PolicyVO">
+        <id column="id" property="id"></id>
+        <result column="title" property="title"></result>
+        <result column="type" property="type"></result>
+        <result column="district" property="district"></result>
+        <result column="publish_date" property="publishDate"></result>
+        <result column="fileno" property="fileNo"></result>
+        <result column="context" property="context" typeHandler="com.tecsun.sisp.iface.server.util.MyBlobTypeHandler"></result>
+    </resultMap>
+    <select id="getPolicyContext" parameterType="com.tecsun.sisp.iface.common.vo.PolicyVO" resultMap="PolicyContext">
+        select t.id, t.title,t.type,t.context,t.district,to_char(t.publish_date,'yyyy-MM-dd') publishDate,t.fileno fileNo from T_POLICY t where t.id=#{id}
+    </select>
+    
+    
+    
+    
+     <select id="getPhoneNo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO">
+        select  mobile,phone,cernum  from t_az01b where cernum=#{cernum} and name=#{name}
+    </select>
+    
+    
+       <select id="getPseronBank" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO">
+        select  bankno  from t_az01b where cernum=#{cernum} and name=#{name} and cardno=#{cardno}
+    </select>
+
+    <select id="getMaxRetime"  resultType="long">
+        select  max(t.retime) id  from t_az01b t
+    </select>
+	<!-- 查询所有可用状态的人员信息 -->
+	<select id="findAllByPersonState" parameterType="java.lang.Integer" resultType="com.tecsun.sisp.iface.common.vo.PersonVO">
+		select * from T_PERSON where personstate=#{personstate}
+	</select>
+    <insert id="insertUser" parameterType="com.tecsun.sisp.iface.common.vo.NetUserInfoVO" >
+       insert into t_az01b t(Retime,CARDNO, CERNUM, NAME,BANKID, BANKNO, MOBILE_ADDRESS, ADDRESS, MOBILE,
+        UNITNO, UNITNAME, BIRTHDAY, NET_PASSWORD, NATION, SEX, PERSON_STATUS, EMAIL,iS_UPDATE)
+       values (#{retime},#{cardno},#{cernum}, #{name}, #{bankid}, #{bankno}, #{mobile_address},
+        #{address}, #{mobile}, #{unitno}, #{unitname},#{birthday},
+        #{net_password}, #{nation}, #{sex}, #{person_status}, #{email},#{isUpdate})
+    </insert>
+
+    <!--求职注册信息添加到平台-->
+    <insert id="registerBySISP" parameterType="com.tecsun.sisp.iface.common.vo.employment.param.job.AddJobSeekerInfoVo" >
+        INSERT INTO EMP_REGISTRATION (ID,XM,XBID,SFZH,MZ,JTZZ,SFZZPLJ,CSNY,SJHM,SG,SLID,XLDM,QZZID,
+        ZZMMID,SFDSZN,HYZKID,JKZKID,SFRNH,ZYDM,CSNXID,JYSYH,JNDJDM,QZZT,CREATE_TIME,UPDATE_TIME,ZXZZ)
+        VALUES (EMP_REGISTRATION_ID_SEQ.nextval,#{xm},#{xbid},#{sfzh},#{mz},#{jtzz},#{sfzzplj},#{csny},#{sjhm},#{sg},#{slid},#{xldm},#{qzzid},
+        #{zzmmid},#{sfdszn},#{hyzkid},#{jkzkid},#{sfrnh},#{zydm},#{csnxid},#{jysyh},#{jndjdm},#{qzzt},sysdate,sysdate,#{zxzz})
+    </insert>
+
+    <select id="getRegistrationInfo"  parameterType="com.tecsun.sisp.iface.common.vo.employment.param.job.AddJobSeekerInfoVo"
+            resultType="com.tecsun.sisp.iface.common.vo.employment.param.job.AddJobSeekerInfoVo">
+        select ID as id,XM as xm,XBID as xbid,SFZH as sfzh,MZ as mz,JTZZ as jtzz,SFZZPLJ as sfzzplj,CSNY as csny,SJHM as sjhm,
+        SG as sg,SLID as slid,XLDM as xldm,QZZID as qzzid,ZZMMID as zzmmid,SFDSZN as sfdszn,HYZKID as hyzkid,JKZKID as jkzkid,SFRNH as sfrnh,
+        ZYDM as zydm,CSNXID as csnxid,JYSYH as jysyh,JNDJDM as jndjdm,QZZT as qzzt,CREATE_TIME as createTime,UPDATE_TIME as updateTime
+        from EMP_REGISTRATION t where 1=1
+        <if test="sfzh != '' and sfzh  != null">  and sfzh=#{sfzh} </if>
+        <if test="qzzid != '' and qzzid  != null">  and qzzid=#{qzzid} </if>
+    </select>
+
+    <update id="updateRegistrationInfo" parameterType="com.tecsun.sisp.iface.common.vo.employment.param.job.AddJobSeekerInfoVo">
+        update EMP_REGISTRATION set UPDATE_TIME=sysdate
+        <if test="xm != '' and xm  != null"> ,XM=#{xm}  </if>
+        <if test="xbid != '' and xbid  != null"> ,XBID=#{xbid}  </if>
+        <if test="mz != '' and mz  != null"> ,MZ=#{mz}  </if>
+        <if test="jtzz != '' and jtzz  != null"> ,JTZZ=#{jtzz}  </if>
+        <if test="sfzzplj != '' and sfzzplj  != null"> ,SFZZPLJ=#{sfzzplj}  </if>
+        <if test="csny != '' and csny  != null"> ,CSNY=#{csny}  </if>
+        <if test="sjhm != '' and sjhm  != null"> ,SJHM=#{sjhm}  </if>
+        <if test="sg != '' and sg  != null"> ,SG=#{sg}  </if>
+        <if test="slid != '' and slid  != null"> ,SLID=#{slid}  </if>
+        <if test="xldm != '' and xldm  != null"> ,XLDM=#{xldm}  </if>
+        <if test="qzzid != '' and qzzid  != null"> ,QZZID=#{qzzid}  </if>
+        <if test="zzmmid != '' and zzmmid  != null"> ,ZZMMID=#{zzmmid}  </if>
+        <if test="sfdszn != '' and sfdszn  != null"> ,SFDSZN=#{sfdszn}  </if>
+        <if test="hyzkid != '' and hyzkid  != null"> ,HYZKID=#{hyzkid}  </if>
+        <if test="jkzkid != '' and jkzkid  != null"> ,JKZKID=#{jkzkid}  </if>
+        <if test="sfrnh != '' and sfrnh  != null"> ,SFRNH=#{sfrnh}  </if>
+        <if test="zydm != '' and zydm  != null"> ,ZYDM=#{zydm}  </if>
+        <if test="csnxid != '' and csnxid  != null"> ,CSNXID=#{csnxid}  </if>
+        <if test="jysyh != '' and jysyh  != null"> ,JYSYH=#{jysyh}  </if>
+        <if test="jndjdm != '' and jndjdm  != null"> ,JNDJDM=#{jndjdm}  </if>
+        <if test="qzzt != '' and qzzt  != null"> ,QZZT=#{qzzt}  </if>
+        where qzzid=#{qzzid}
+        <if test="sfzh != '' and sfzh  != null">  and sfzh=#{sfzh} </if>
+        </update>
+    
+    <!--  2018/6/22身份证查找人-->
+    <sql id="queryCard">RETIME,CITYNO,CARDNO, CERNUM,NAME, FKRQ ,YXQZ,CARD_STATUS, BANKID,WD_BANK, BANKNO,VALIDTAG,  CREATE_TIME,UPDATE_TIME,  GRBH          
+	  MOBILE_ADDRESS,ADDRESS, MOBILE, PHONE, UNITNO, UNITNAME, BIRTHDAY, NET_PASSWORD, NATION, SEX ,GJ , PERSON_STATUS, IS_UPDATE, EMAIL,         
+	  REMARK
+  </sql>
+  	<select id="queryByCardPerson" parameterType="com.tecsun.sisp.iface.common.vo.ApersonVO" resultType="com.tecsun.sisp.iface.common.vo.ApersonVO">
+  		select <include refid="queryCard"/> from T_AZ01B where cernum=#{cernum}
+  	</select>
+    
+   
+        
+        </mapper>
+	

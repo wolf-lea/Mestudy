@@ -1,0 +1,58 @@
+1.引入第三方包：
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.1.2</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient-cache</artifactId>
+    <version>4.1.2</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpmime</artifactId>
+    <version>4.1.2</version>
+</dependency>
+<dependency>
+    <groupId>org.codehaus.jackson</groupId>
+    <artifactId>jackson-mapper-asl</artifactId>
+    <version>1.9.13</version>
+</dependency>
+<dependency>
+    <groupId>org.codehaus.jackson</groupId>
+    <artifactId>jackson-core-asl</artifactId>
+    <version>1.9.13</version>
+</dependency>
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>${log4j.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>${slf4j.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-log4j12</artifactId>
+    <version>${slf4j.version}</version>
+</dependency>
+
+2.调用流程：
+1).程序初始化时调用方法：IFaceHttpsClient.ClientInit("127.0.0.1", 80, 60,true, "TSB", "sisp");
+入参：
+    ip   访问的服务器ip
+    port 访问的服务器port
+    tokenTimeOut 每次签到的间隔时间(单位：分钟),默认60分钟
+    isVerify  是否是https请求
+    channelcode  渠道编码:  TSB 德生宝
+    platformContext 平台编码 暂定为：sisp
+调用代码：
+    SecQueryBean bean = new SecQueryBean();
+    bean.setId("420902200802040837");
+    bean.setName("汤骏祺");
+    bean.setChannelcode("SelfService");
+    Page<TsgrjfxxVO> page = IFaceHttpsClient.getPersonPesionPay(bean);
+    System.out.println(page.getData().size());

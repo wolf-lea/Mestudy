@@ -1,0 +1,324 @@
+getHostpital	SISP_IFACE_HIS_001
+getHostpitalall	SISP_IFACE_HIS_002
+recruitdetailhis	SISP_IFACE_JOB_001
+jobforterminal	SISP_IFACE_JOB_002
+jobforterminahis	SISP_IFACE_JOB_003
+pushJob	SISP_IFACE_JOB_004
+pushJobhis	SISP_IFACE_JOB_005
+recruitinfbytype	SISP_IFACE_JOB_006
+recruitinfo	SISP_IFACE_JOB_007
+recruitdetail	SISP_IFACE_JOB_008
+jobintroduction	SISP_IFACE_JOB_009
+getPeiXunJobType	SISP_IFACE_JOB_010
+getPeiXunOrg	SISP_IFACE_JOB_011
+getPeiXunInfoByType	SISP_IFACE_JOB_012
+getPeiXunInfoByOrg	SISP_IFACE_JOB_013
+addPeiXunInfo	SISP_IFACE_JOB_014
+addjobforterminal	SISP_IFACE_JOB_015
+oldCardChangeNew	SISP_IFACE_SB_001
+getpersoninfo	SISP_IFACE_SB_002
+getPersonHexString	SISP_IFACE_SB_003
+sendSms	SISP_IFACE_SB_004
+getphoneno	SISP_IFACE_SB_005
+changePhoneno	SISP_IFACE_SB_006
+getcxmx	SISP_IFACE_SB_007
+getyecx	SISP_IFACE_SB_008
+getzkjd	SISP_IFACE_SB_009
+medicalPayment	SISP_IFACE_SB_010
+forOldPayment	SISP_IFACE_SB_011
+gongShangPayment	SISP_IFACE_SB_012
+shengYuPayment	SISP_IFACE_SB_013
+shiYePayment	SISP_IFACE_SB_014
+medicalConsume	SISP_IFACE_SB_015
+medicalAppropriate	SISP_IFACE_SB_016
+forOldAppropriate	SISP_IFACE_SB_017
+forOldPrint	SISP_IFACE_SB_018
+gongShangPrint	SISP_IFACE_SB_019
+shengYuPrint	SISP_IFACE_SB_020
+shiYePrint	SISP_IFACE_SB_021
+medicPrintInfo	SISP_IFACE_SB_022
+
+
+
+web.view.prefix=/WEB-INF/views/
+web.view.suffix=.jsp
+
+#整个平台的项目根路径
+platform_context_path=/sisp
+
+#平台内部集群的代理服务器IP,Port
+inner_proxy_ip=127.0.0.1
+inner_proxy_port=80
+
+#redis服务器
+redis_core_database=127.0.0.1_6379
+#渠道登录redis超时时间
+redis_iface_expx=60
+
+
+# job dataSource
+jdbc.job.driverClassName=com.ibm.db2.jcc.DB2Driver
+jdbc.job.url=jdbc:db2://19.120.100.28:50000/sbfwzd:currentSchema=DB2ADMIN;
+jdbc.job.username=db2admin
+jdbc.job.password=Jmrs28!@#
+# shebao   dataSource
+jdbc.person.driverClassName=oracle.jdbc.driver.OracleDriver
+jdbc.person.url=jdbc:oracle:thin:@19.120.100.1:1521:orcl
+jdbc.person.username=tscard_zdj
+jdbc.person.password=Tscard_zdj@168.com
+# train   dataSource
+jdbc.train.driverClassName=oracle.jdbc.driver.OracleDriver
+jdbc.train.url=jdbc:oracle:thin:@19.120.100.4:1521:ora10g
+jdbc.train.username=qyfwpt_dl
+jdbc.train.password=Jmqyfwpt4@
+#wuxian dataSource
+jdbc.jcc.driverClassName=com.ibm.db2.jcc.DB2Driver
+jdbc.jcc.url=jdbc:db2://19.120.101.16:50005/jmsbweb
+jdbc.jcc.username=cxgg
+jdbc.jcc.password=cxgg
+
+jdbc.maxIdleTime=3000
+jdbc.minPoolSize=10
+jdbc.maxPoolSize=300
+jdbc.initialPoolSize=10
+
+
+package upload;
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.apache.tomcat.util.http.fileupload.RequestContext;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext;
+
+
+@Path("/images")
+ @Consumes(MediaType.MULTIPART_FORM_DATA)
+ public class ImageResource {
+     private static final String SERVER_UPLOAD_LOCATION_FOLDER = "E://";
+     @POST
+     @Produces(MediaType.MULTIPART_FORM_DATA)
+     public String uploadStatePolicy(@Context HttpServletRequest request) {
+         try {
+             String fileName = saveFile(request);
+             if (!fileName.equals("")) {
+
+             } else {
+
+             }
+         } catch (Exception ex) {
+         }
+         return "123";
+     }
+
+     private String saveFile(HttpServletRequest request) {
+         String fileName = "";
+         try {
+             if (ServletFileUpload.isMultipartContent(request)) {
+                 FileItemFactory factory = new DiskFileItemFactory();
+                 ServletFileUpload upload = new ServletFileUpload(factory);
+                 List<FileItem> items = null;
+                 try {
+                	  // items=upload.parseRequest((RequestContext) request);
+                	  items = upload.parseRequest(new ServletRequestContext(request));
+                 } catch (FileUploadException e) {
+                     e.printStackTrace();
+                 }
+                 if (items != null) {
+                     Iterator<FileItem> iter = items.iterator();
+                     while (iter.hasNext()) {
+                         FileItem item = iter.next();
+                         if (!item.isFormField() && item.getSize() > 0) {
+                             fileName = processFileName(item.getName());
+                             try {
+                                 item.write(new File(
+                                         SERVER_UPLOAD_LOCATION_FOLDER
+                                                 + fileName));
+                             } catch (Exception e) {
+                                 e.printStackTrace();
+                             }
+                         }
+                     }
+                 }
+             }
+         } catch (Exception e) {
+        	 e.printStackTrace();
+         }
+         return fileName;
+     }
+
+     private String processFileName(String fileNameInput) {
+         String fileNameOutput = null;
+         fileNameOutput = fileNameInput.substring(
+                 fileNameInput.lastIndexOf("\\") + 1, fileNameInput.length());
+         return fileNameOutput;
+     }
+ }
+
+
+-Xms512m -Xmx512m -XX:MaxPermSize=512m -XX:NewRatio=4 -Xss128k -Dsun.awt.keepWorkingSetOnMinimize=true -server
+
+
+ <!DOCTYPE html>
+ <html>
+ <head>
+ <meta charset="UTF-8">
+ <title>Insert title here</title>
+ </head>
+ <body>
+ <h1>Upload a File</h1>
+
+      <form action="/Upload/rest/images" method="post" enctype="multipart/form-data">
+
+         <p>
+          Select a file : <input type="file" name="file" size="50" />
+        </p>
+
+         <input type="submit" value="Upload It" />
+      </form>
+
+ </body>
+ </html>
+
+
+
+
+ <servlet>
+           <servlet-name>jersey-helloworld-serlvet</servlet-name>
+          <servlet-class>
+                        com.sun.jersey.spi.container.servlet.ServletContainer
+                   </servlet-class>
+          <init-param>
+               <param-name>com.sun.jersey.config.property.packages</param-name>
+               <param-value>upload</param-value>
+          </init-param>
+          <load-on-startup>1</load-on-startup>
+      </servlet>
+
+      <servlet-mapping>
+          <servlet-name>jersey-helloworld-serlvet</servlet-name>
+          <url-pattern>/rest/*</url-pattern>
+      </servlet-mapping>
+       <welcome-file-list>
+         <welcome-file>/WEB-INF/form.html</welcome-file>
+     </welcome-file-list>
+
+     asm-3.3.1.jar
+     jersey-core-1.15.jar
+     jersey-server-1.15.jar
+     jersey-servlet-1.15.jar
+
+
+     import java.io.FileInputStream;
+     import java.io.IOException;
+     import java.net.URLEncoder;
+
+     import javax.servlet.ServletException;
+     import javax.servlet.ServletOutputStream;
+     import javax.servlet.http.HttpServlet;
+     import javax.servlet.http.HttpServletRequest;
+     import javax.servlet.http.HttpServletResponse;
+
+     import org.apache.commons.io.IOUtils;
+
+     import sun.misc.BASE64Encoder;
+
+     @SuppressWarnings("serial")
+     public class Download1Servlet extends HttpServlet {
+     	@Override
+     	public void doGet(HttpServletRequest req, HttpServletResponse resp)
+     			throws ServletException, IOException {
+
+     		String filename = "E:/1.png";
+     		// 为了使下载框中显示中文文件名称不出乱码！
+     		String framename = filenameEncoding("a%a.jpg", req);
+     		String contentType = this.getServletContext()
+     				.getMimeType(filename);//通过文件名称获取MIME类型
+     		String contentDisposition = "attachment;filename=" + framename;
+     		// 一个流
+     		FileInputStream input = new FileInputStream(filename);
+     		//设置头
+     		resp.setHeader("Content-Type", contentType);
+     		resp.setHeader("Content-Disposition", contentDisposition);
+     		// 获取绑定了响应端的流
+     		ServletOutputStream output = resp.getOutputStream();
+     		IOUtils.copy(input, output);//把输入流中的数据写入到输出流中。
+     		input.close();
+     	}
+
+     	// 用来对下载的文件名称进行编码的！
+     	public static String filenameEncoding(String filename, HttpServletRequest request) throws IOException {
+     		String agent = request.getHeader("User-Agent"); //获取浏览器
+     		if (agent.contains("Firefox")) {
+     			BASE64Encoder base64Encoder = new BASE64Encoder();
+     			filename = "=?utf-8?B?"+ base64Encoder.encode(filename.getBytes("utf-8"))+ "?=";
+     		} else if(agent.contains("MSIE")) {
+     			filename = URLEncoder.encode(filename, "utf-8");
+     		} else {
+     			filename = URLEncoder.encode(filename, "utf-8");
+     		}
+     		return filename;
+     	}
+     }
+
+
+     <servlet>
+       	<servlet-name>Download1Servlet</servlet-name>
+       	<servlet-class>cn.com.web.servlet.Download1Servlet</servlet-class>
+       </servlet>
+       <servlet-mapping>
+       	<servlet-name>Download1Servlet</servlet-name>
+       	<url-pattern>/Download1Servlet</url-pattern>
+       </servlet-mapping>
+
+
+         String aFileName = request.getParameter("fileName");
+               String online = request.getParameter("online");
+               FileInputStream in = null;
+               ServletOutputStream out = null;
+               boolean isOnLine = online != null ? true : false ;
+               try {
+
+
+                   if(isOnLine){
+                       URL u = new URL("file:///"+fileDir + aFileName);
+                       response.setContentType(u.openConnection().getContentType());
+                       response.setHeader("Content-Disposition", "inline; filename="+aFileName);
+                    }
+                   else{
+                       response.setContentType("application/x-msdownload");
+                       response.setHeader("Content-Disposition", "attachment; filename=" + aFileName);
+                   }
+
+                   in = new FileInputStream(fileDir + aFileName);
+                   out = response.getOutputStream();
+                   out.flush();
+                   int aRead = 0;
+                   while ((aRead = in.read()) != -1 & in != null) {
+                       out.write(aRead);
+                    }
+                   out.flush();
+
+               } catch (Throwable e) {
+                   e.printStackTrace();
+               } finally {
+                   try {
+                       in.close();
+                       out.close();
+                   } catch (Throwable e) {
+                       e.printStackTrace();
+                   }
+               }
