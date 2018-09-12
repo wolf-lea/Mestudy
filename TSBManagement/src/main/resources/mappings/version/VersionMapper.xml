@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.siboss.tsbm.modules.version.service.VersionMapper">
+
+    <select id="getSequence" resultType="long">
+        select t_tsbm_version_seq.nextval from dual
+    </select>
+
+    <!--按条件查询所有软件版本-->
+    <select id="getAllDataList" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VersionParam">
+        SELECT id, name, pre_version, version, url, description, area_ids, device_type, app_type, device_ids, status, create_user,create_time,
+        audit_user, audit_time, mod_user, mod_time, process_time, finish_time, isdelete FROM t_tsbm_version
+        WHERE 1 = 1
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="version != null and version != ''">
+            and version = #{version}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and create_time <![CDATA[>=#{beginTime}]]>
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and create_time <![CDATA[<=#{endTime}]]>
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <!--按条件分页查询状态为未删除的软件版本-->
+    <select id="getList" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VersionParam">
+        select id, name, pre_version, version, url, description, area_ids, device_type, app_type, device_ids, status, create_user,create_time,
+        audit_user, audit_time, mod_user, mod_time, process_time, finish_time, isdelete From t_tsbm_version
+        where isdelete = 'N'
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="version != null and version != ''">
+            and version = #{version}
+        </if>
+        <if test="deviceType != null and deviceType != ''">
+            and device_type = #{deviceType}
+        </if>
+        <if test="deviceIds != null and deviceIds != ''">
+            and device_ids like '%'||#{deviceIds, jdbcType=VARCHAR}||'%'
+        </if>
+        <if test="areaIds != null and areaIds != ''">
+            and area_ids like '%'||#{areaIds, jdbcType=VARCHAR}||'%'
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+        <if test="createUser != null and createUser != ''">
+            and create_user = #{createUser}
+        </if>
+        <if test="auditUser != null and auditUser != ''">
+            and audit_user = #{auditUser}
+        </if>
+        <if test="modUser != null and modUser != ''">
+            and mod_user = #{modUser}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and create_time <![CDATA[>=#{beginTime}]]>
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and create_time <![CDATA[<=#{endTime}]]>
+        </if>
+        <if test="isDelete != null and isDelete != ''">
+            and isdelete = #{isDelete}
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <!--根据主键ID获取软件版本-->
+    <select id="getVersion" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO" parameterType="java.lang.Long">
+        select id, name, pre_version, version, url, description, area_ids, device_type, app_type, device_ids, status, create_user, create_time,
+        audit_user, audit_time, mod_user, mod_time, process_time, finish_time, isdelete From t_tsbm_version where id=#{id}
+    </select>
+
+    <!--修改软件版本状态为删除-->
+    <select id="deleteVersion" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        update t_tsbm_version set isdelete = 'Y' where id=#{id}
+    </select>
+
+    <!--添加软件版本-->
+    <select id="addVersion" resultType="java.lang.Integer" parameterType="java.util.Map">
+        insert into t_tsbm_version(id, name, pre_version, version, url,
+         description, area_ids, device_type, app_type, device_ids, status,
+        create_user, create_time, audit_user, audit_time, mod_user,
+        mod_time, process_time, finish_time, isdelete)
+        values(#{id}, #{name}, #{preVersion}, #{version}, #{url},
+        #{description}, #{areaIds}, #{deviceType}, #{appType}, #{deviceIds}, #{status},
+        #{createUser}, sysdate, null, null, null ,
+        null, #{processTime}, null , 'N')
+    </select>
+
+    <!--更新软件版本-->
+    <select id="updateVersion" resultType="java.lang.Integer" parameterType="java.util.Map">
+        update t_tsbm_version set name=#{name}, pre_version=#{preVersion}, version=#{version}, url=#{url}, description=#{description},
+         area_ids=#{areaIds}, device_ids=#{deviceIds},
+         mod_user=#{modUser}, mod_time=sysdate, process_time=#{processTime} where id=#{id}
+    </select>
+
+    <!--查询所有软件版本，相同版本去重-->
+    <select id="queryAllVersion" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VersionParam">
+      SELECT t.id, t.name, t.pre_version, t.version, t.url,
+            t.description, t.area_ids, t.device_type, t.device_ids,
+            t.status,t.create_user,t.create_time,t.audit_user,
+            t.audit_time, t.mod_user, t.mod_time, t.process_time, t.finish_time, t.isdelete
+       FROM t_tsbm_version t
+       WHERE id = (SELECT min(id) FROM t_tsbm_version WHERE version = t.version and isdelete = #{isDelete}) and device_type = #{deviceType}
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="version != null and version != ''">
+            and version = #{version}
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+       ORDER BY id DESC
+    </select>
+
+    <!--查询设备信息-->
+    <select id="queryVersionByCpu" resultType="com.tecsun.siboss.tsbm.modules.version.entity.DeviceVO"
+            parameterType="java.lang.String">
+        SELECT id, flownum, cpu, model, repairflag, hardware_version,
+        android_version, software_version, keyboard_code,
+        keyboard_version, sign_license, area_id, cust_id, merchant_id,
+        status, sales_type, warehouse_id, create_time, create_user,
+        mod_time, mod_user, module_id
+        FROM t_tsbm_device WHERE cpu = #{cpu}
+    </select>
+
+    <!--根据设备ID、区域ID等查询软件版本信息-->
+    <select id="queryLatestVersion" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO"
+            parameterType="com.tecsun.siboss.tsbm.modules.version.entity.DeviceVO">
+        SELECT t.id, t.name, t.pre_version, t.version, t.url, t.description,
+        t.area_ids, t.device_type, t.device_ids, t.status, t.create_user,
+        t.create_time, t.audit_user, t.audit_time, t.mod_user, t.mod_time,
+        t.process_time, t.finish_time, t.isdelete
+        FROM (
+        SELECT id, name, pre_version, version, url, description,
+        area_ids, device_type, device_ids, status, create_user,
+        create_time, audit_user, audit_time, mod_user, mod_time,
+        process_time, finish_time, isdelete
+        FROM t_tsbm_version
+        WHERE 1=1
+        <if test="id != null">
+            AND device_ids IS NOT NULL
+            AND device_ids like '%'||#{id, jdbcType=VARCHAR}||'%'
+        </if>
+        <if test="areaId != null">
+            AND device_ids is null AND
+            (area_ids like '%'||#{areaId, jdbcType=INTEGER}||'%' OR area_ids is null)
+        </if>
+        AND isdelete = 'N' AND (process_time &lt; sysdate OR process_time is null) order by id desc
+        ) t where rownum = 1
+    </select>
+
+    <!--查找所有定义了更新区域的软件版本-->
+    <select id="queryDictVersion" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO">
+        SELECT * FROM t_tsbm_version WHERE device_ids IS NULL AND area_ids IS NOT NULL AND isdelete = 'N' AND (process_time &lt; sysdate OR process_time is null)
+    </select>
+
+    <select id="getByDeviceId" parameterType="java.lang.Long"
+            resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionUpdateListVO">
+        SELECT t.id, t.version_id, t.status, t.update_time, t.finish_time, t.return_code,
+        t.update_type, t.create_time, t.create_user, t.mod_time, t.mod_user, t.push_num,
+        t.remark, t.device_no, t.version, t.url, t.name, t.description
+        FROM (
+        SELECT tul.id, tul.version_id, tul.status, tul.update_time, tul.finish_time, tul.return_code,
+        tul.update_type, tul.create_time, tul.create_user, tul.mod_time, tul.mod_user, tul.push_num,
+        tul.remark, tul.device_no, tve.version, tve.url, tve.name, tve.description
+        FROM t_tsbm_version_update_list tul LEFT JOIN t_tsbm_version tve ON tul.version_id = tve.id
+        WHERE tul.device_no = #{deviceNo} AND tul.status != '3' AND tul.update_type = '1' AND tve.isdelete = 'N' ORDER BY tve.version DESC
+        ) t WHERE rownum = 1
+
+    </select>
+
+    <!--添加一条更新记录到版本更新队列表-->
+    <insert id="addVerUpdateList"
+            parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VersionUpdateListVO">
+        insert into t_tsbm_version_update_list
+        (id, device_no, version_id, status,
+        update_type,create_time,create_user,push_num,remark)
+        values
+        (t_tsbm_version_update_list_seq.nextval, #{deviceNo}, #{versionId}, #{status},
+        #{updateType}, sysdate, #{createUser}, #{pushNum}, #{remark})
+    </insert>
+
+    <!--更新设备信息表的设备软件版本信息-->
+    <update id="updateDeviceInfo" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.DeviceVO">
+        UPDATE t_tsbm_device
+        <set>
+            <if test="flowNum != null">
+                flownum = #{flowNum},
+            </if>
+            <if test="cpu != null">
+                cpu = #{cpu},
+            </if>
+            <if test="model != null">
+                model = #{model},
+            </if>
+            <if test="repairFlag != null">
+                repairflag = #{repairFlag},
+            </if>
+            <if test="hardwareVersion != null">
+                hardware_version = #{hardwareVersion},
+            </if>
+            <if test="androidVersion != null">
+                android_version = #{androidVersion},
+            </if>
+            <if test="softwareVersion != null">
+                softwareVersion = #{softwareVersion},
+            </if>
+            <if test="keyboardCode != null">
+                keyboard_code = #{keyboardCode},
+            </if>
+            <if test="keyboardVersion != null">
+                keyboard_version = #{keyboardVersion},
+            </if>
+            <if test="signLicense != null">
+                sign_license = #{signLicense},
+            </if>
+            <if test="areaId != null">
+                area_id = #{areaId},
+            </if>
+            <if test="custId != null">
+                cust_id = #{custId},
+            </if>
+            <if test="merchantId != null">
+                merchant_id = #{merchantId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="salesType != null">
+                sales_type = #{salesType},
+            </if>
+            <if test="warehouseId != null">
+                warehouse_id = #{warehouseId},
+            </if>
+            <if test="modUser != null">
+                mod_user = #{modUser},
+                mod_time = sysdate,
+            </if>
+            <if test="moduleId != null">
+                module_id = #{moduleId}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--添加一条设备信息更改记录-->
+    <insert id="addChangeLog" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.DevChangelogVO">
+        INSERT INTO t_tsbm_device_changelog (
+        id, device_id, create_time, create_user, opt_description
+        ) VALUES (
+        t_tsbm_device_changelog_seq.nextval, #{deviceId}, sysdate, #{createUser}, #{optDescription})
+    </insert>
+
+    <!--添加一条版本校验记录-->
+    <insert id="checkRecord" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VerCheckRecordVO">
+        INSERT INTO t_tsbm_vercheck_record (
+        id, device_id, device_type, area_id, curr_version,
+        latest_version_id, latest_version, need_update,
+        opt_user, opt_time, description
+        ) VALUES (
+        t_tsbm_vercheck_record_seq.nextval, #{deviceId}, #{deviceType}, #{areaId}, #{currVersion},
+        #{latestVersionId}, #{latestVersion}, #{needUpdate}, #{optUser}, sysdate, #{description})
+    </insert>
+
+    <!--根据软件版本ID和设备ID查找更新队列中是否已存在记录-->
+    <select id="getUpdateRec" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VerUpdateListParam"
+            resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionUpdateListVO">
+        SELECT t.* FROM (SELECT * FROM t_tsbm_version_update_list
+        WHERE version_id = #{versionId} AND device_no = #{deviceNo} AND (status = 1 OR status = 2)
+        ORDER BY id DESC) t WHERE rownum = 1
+    </select>
+
+    <!--更新队列表内的记录的状态-->
+    <update id="updateList" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VersionUpdateListVO">
+        UPDATE t_tsbm_version_update_list
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="pushNum != null">
+                push_num = #{pushNum}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--根据区域ID查询区域名称和父ID-->
+    <select id="queryArea" parameterType="java.lang.Long" resultType="com.tecsun.siboss.tsbm.modules.version.entity.AreaResult">
+        SELECT t.parent_id,t.name FROM t_distinct t where t.distinct_id = #{distinctId, jdbcType=INTEGER}
+    </select>
+
+    <!--根据软件版本号查找软件版本信息-->
+    <select id="getByVersion" parameterType="java.util.Map"
+            resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionVO">
+        SELECT t.* FROM
+        (SELECT * FROM t_tsbm_version WHERE version = #{version} AND app_type = #{appType} AND isdelete = 'N' ORDER BY id DESC) t
+        WHERE rownum = 1
+    </select>
+</mapper>

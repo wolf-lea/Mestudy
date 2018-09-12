@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.siboss.tsbm.modules.version.service.VersionOptlogMapper">
+
+    <select id="getSequence" resultType="java.lang.Long">
+        select t_tsbm_version_optlog_seq.nextval from dual
+    </select>
+
+    <select id="getAllDataList" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionOptlogVO">
+        SELECT id, version_id, opt_type, opt_user, opt_time, option_description FROM t_tsbm_version_optlog ORDER BY id DESC
+    </select>
+
+    <select id="getList" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionOptlogVO" parameterType="com.tecsun.siboss.tsbm.modules.version.entity.VersionOptlogParam">
+        SELECT id, version_id, opt_type, opt_user, opt_time, option_description FROM t_tsbm_version_optlog
+        where 1 = 1
+        <if test="versionId != null and versionId != ''">
+            and version_id = #{versionId}
+        </if>
+        <if test="optType != null and optType != ''">
+            and opt_type = #{optType}
+        </if>
+        <if test="optUser != null and optUser != ''">
+            and opt_user = #{optUser}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and opt_time <![CDATA[>=#{beginTime}]]>
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and opt_time <![CDATA[<=#{endTime}]]>
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getVersionOptlog" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VersionOptlogVO" parameterType="java.lang.Long">
+        SELECT id, version_id, opt_type, opt_user, opt_time, option_description FROM t_tsbm_version_optlog where id=#{id}
+    </select>
+
+    <select id="deleteVersionOptlog" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        delete from t_tsbm_version_optlog where id=#{id}
+    </select>
+
+    <select id="addVersionOptlog" resultType="java.lang.Integer" parameterType="java.util.Map">
+        insert into t_tsbm_version_optlog(id, version_id, opt_type, opt_user, opt_time, option_description)
+        values(t_tsbm_version_optlog_seq.nextval, #{versionId}, #{optType}, #{optUser}, sysdate, #{optionDescription})
+    </select>
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.temporaryCard.BankNetServiceImpl">
+
+    <!-- 查询临时卡市银行接收列表 -->
+    <select id="getBankNetBoxList" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+
+        select id,BOXNO,CARDNO_START,CARDNO_END,CARDNO_SUM,STATUS,BANK,rkwd from TEMPCARD_BOX
+        <where>
+            <if test="boxNO!=null and boxNO!=''" >
+                BOXNO=#{boxNO}
+            </if>
+            <if test="cardNOStart!=null and cardNOStart!=''" >
+                and CARDNO_START &gt;= #{cardNOStart}
+            </if>
+            <if test="cardNOEnd!=null and cardNOEnd!=''" >
+                and CARDNO_END &lt;= #{cardNOEnd}
+            </if>
+            <if test="bank!=null and bank!=''" >
+                and bank=#{bank}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 查询临时卡市银行接收详细列表 -->
+    <select id="getBankNetCardList" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+
+        select id,TEMPCARD_NO,STATUS from TEMPCARD_DETAIL
+        where TEMPCARD_NO BETWEEN #{cardNOStart} and #{cardNOEnd}
+        order by TEMPCARD_NO asc
+    </select>
+
+    <!-- 修改临时卡 明细表 的入库网点和状态 -->
+    <update id="updateCardDetailByCardNO" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+        update TEMPCARD_DETAIL set rkwd=#{rkwd},update_time=sysdate
+        where TEMPCARD_NO BETWEEN #{cardNOStart} and #{cardNOEnd}
+    </update>
+
+    <!-- 修改临时卡盒表中的入库网点和状态 -->
+    <update id="updateCardboxByBoxNO" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+        update TEMPCARD_BOX set rkwd=#{rkwd},status=#{status},update_time=sysdate
+        where BOXNO=#{boxNO}
+    </update>
+
+    <select id="getTempCardInfo" parameterType="java.lang.Integer"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+        select * from TEMPCARD_INFO where rkwd=#{rkwd}
+    </select>
+
+    <!-- 修改临时卡主表信息 -->
+    <update id="updateCardInfoByRkwd" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+        update TEMPCARD_INFO
+        <set>
+            <if test="cardInstoreNum!=null">
+                CARD_INSTORE_NUM=#{cardInstoreNum},
+            </if>
+            <if test="cardGrantNum!=null">
+                CARD_GRANT_NUM=#{cardGrantNum},
+            </if>
+            CARD_SURPLUS_NUM=#{cardSurplusNum},update_time=sysdate
+
+        </set>
+        where rkwd=#{rkwd}
+    </update>
+    <!-- 添加临时卡主表信息 -->
+    <insert id="addCardInfo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.BankNetVO">
+        insert into TEMPCARD_INFO(id,CARD_INSTORE_NUM,CARD_GRANT_NUM,CARD_SURPLUS_NUM,RECOVERY_NUM,WASTE_CARD_NUM,
+          CANCEL_NUM,RKWD,CREATE_TIME) values
+              (SEQ_TEMPCARD_INFO.nextval,#{cardInstoreNum},0,#{cardSurplusNum},0,0,0,#{rkwd},sysdate)
+    </insert>
+
+</mapper>

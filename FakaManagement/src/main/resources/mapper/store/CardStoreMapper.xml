@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.store.CardStoreServiceImpl">
+
+    <!--库存统计-->
+    <select id="getCardStoreCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreCountVO">
+        select distinct ss.ccid,
+        (select ccid from card_cabinet where id=ss.ccid) as ccName
+        from card_store ss,card_info ii
+        where ss.ciid=ii.id and ii.fkwd=#{fkwd}
+    </select>
+    <!--统计盒数-->
+    <select id="getBoxCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreCountVO">
+        select count(1) as boxCount
+        from (select distinct s.ccid,s.bin,s.box,i.batch_no from card_store s,card_info i where s.ciid=i.id)tt
+        where tt.ccid=#{ccid}
+    </select>
+    <!--统计卡总量-->
+    <select id="getCardCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreCountVO">
+        select count(1) as cardCount
+        from card_info i,card_store s where i.id=s.ciid and s.ccid=#{ccid}
+    </select>
+    <!--统计发卡量-->
+    <select id="getFakaCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreCountVO">
+        select count(1) as fakaCount
+        from card_info i,card_store s where i.id=s.ciid and i.status=7 and s.ccid=#{ccid}
+    </select>
+
+    <!--库存明细-->
+    <select id="getCardStoreInfo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreInfoVO">
+
+        select distinct ss.ccid,ss.bin,ss.box,ii.batch_no,
+        (select ccid from card_cabinet where id=ss.ccid) as ccName
+        from card_store ss,card_info ii
+        where ss.ciid=ii.id and ii.fkwd=#{fkwd}
+        <if test="batchNo !=null and batchNo != ''">
+            and ii.batch_no=#{batchNo}
+        </if>
+        <if test="bin !=null and bin != ''">
+            and ss.bin=#{bin}
+        </if>
+        <if test="box !=null and box != ''">
+            and ss.box=#{box}
+        </if>
+
+    </select>
+    <!--统计库存明细卡总量-->
+    <select id="getCardCountInfo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreInfoVO">
+        select count(1) as cardCount
+        from card_info i,card_store s
+        where i.id=s.ciid and s.ccid=#{ccid} and s.bin=#{bin} and s.box=#{box} and i.batch_no=#{batchNo}
+    </select>
+    <!--统计库存明细发卡量-->
+    <select id="getFakaCountInfo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreInfoVO">
+        select count(1) as fakaCount
+        from card_info i,card_store s
+        where i.id=s.ciid and i.status=7 and s.ccid=#{ccid} and s.bin=#{bin} and s.box=#{box} and i.batch_no=#{batchNo}
+    </select>
+
+    <!--通过批次号查询箱号盒号-->
+    <select id="getBinBoxByBatch" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreInfoVO">
+        select distinct s.bin,s.box
+        from card_store s,card_info i
+        where s.ciid=i.id and i.batch_no=#{batchNo}
+    </select>
+
+    <!--库存详情-->
+    <select id="getCardStoreDetail" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreDetailVO">
+        select i.name,i.idcard,i.phone,i.fkwd,i.status,i.batch_no,
+            (select ccid from card_cabinet where id=s.ccid) as ccName,
+            s.bin,s.box,s.csid
+        from card_info i,card_store s
+        where i.id=s.ciid and s.ccid=#{ccid} and s.bin=#{bin} and s.box=#{box} and i.batch_no=#{batchNo}
+        <if test="idcard !=null and idcard != ''">
+            and i.idcard=#{idcard}
+        </if>
+        <if test="status == 7">
+            and i.status = 7
+        </if>
+        <if test="status == 0">
+            and i.status != 7
+        </if>
+        order by s.csid
+    </select>
+
+    <!--查询选择合并到的对应盒子的最大卡序号-->
+    <select id="getMaxCsid" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreMergeBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreMergeVO">
+        select max(csid) as maxCsid from card_store s,card_info i
+        where s.ciid=i.id and s.ccid=#{ccid} and s.bin=#{bin} and s.box=#{box} and i.batch_no=#{batchNo}
+    </select>
+    <!--查询需要合并的盒子里的卡ID-->
+    <select id="getCiidFromCardStore" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreMergeBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.CardStoreMergeVO">
+        select s.ciid from card_store s,card_info i
+        where s.ciid=i.id and s.ccid=#{ccid} and s.bin=#{bin} and s.box=#{box} and i.batch_no=#{batchNo} and s.csid &gt; 0
+    </select>
+    <!--修改合并卡对应的卡序号、柜号、箱号、盒号-->
+    <update id="updateCardStoreInfoByCiid" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreMergeBean">
+        update card_store s set
+        s.csid=#{csid}, s.ccid=#{ccid}, s.bin=#{bin}, s.box=#{box}, s.store_time=sysdate
+        where s.ciid=#{ciid} and s.csid &gt; 0
+    </update>
+
+    <!--修改卡数据的批次和系统位置-->
+    <update id="updateCardInfoByCiid" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.CardStoreMergeBean">
+        update card_info i set
+        i.batch_no=#{batchNo}, i.xt_zxwz=#{newZxwz}
+        where i.id=#{ciid}
+    </update>
+
+
+
+</mapper>

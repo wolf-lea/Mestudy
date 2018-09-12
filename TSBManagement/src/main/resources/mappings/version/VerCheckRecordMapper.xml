@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.siboss.tsbm.modules.version.service.VerCheckRecordMapper">
+
+    <select id="getSequence" resultType="long">
+        select t_tsbm_version_record_seq.nextval from dual
+    </select>
+
+    <select id="getAllDataList" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VerCheckRecordVO">
+        SELECT id, device_id, device_type, area_id, curr_version,latest_version,
+               latest_version_id,need_update,opt_user,description,opt_time
+        FROM t_tsbm_vercheck_record ORDER BY id ASC
+    </select>
+
+    <select id="getList" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VerCheckRecordVO" parameterType="java.util.Map">
+        select id, device_id, device_type, area_id, curr_version,latest_version,
+               latest_version_id,need_update,opt_user,description,opt_time
+        from t_tsbm_vercheck_record
+        where 1=1
+        <if test="deviceId != null and deviceId != ''">
+          and device_id = #{deviceId, jdbcType=Long}
+        </if>
+        <if test="deviceType != null and deviceType != ''">
+            and device_type = #{deviceType, jdbcType=INTEGER}
+        </if>
+        <if test="areaId != null and areaId != ''">
+            and area_id = #{areaId, jdbcType=Long}
+        </if>
+        <if test="currVersion != null and currVersion != ''">
+            and curr_version = #{currVersion,jdbcType=VARCHAR}
+        </if>
+        <if test="latestVersion != null and latestVersion != ''">
+            and latest_version = #{latestVersion,jdbcType=VARCHAR}
+        </if>
+        <if test="latestVersionId != null and latestVersionId != ''">
+            and latest_version_id = #{latest_version_id,jdbcType=Long}
+        </if>
+        <if test="needUpdate != null and needUpdate != ''">
+            and need_update = #{needUpdate,jdbcType=VARCHAR}
+        </if>
+
+        <if test="optUser != null and optUser != ''">
+            and opt_user = #{optUser,jdbcType=VARCHAR}
+        </if>
+        <if test="description != null and description != ''">
+            and description = #{description,jdbcType=VARCHAR}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and opt_time <![CDATA[>=#{beginTime}]]>
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and opt_time <![CDATA[<=#{endTime}]]>
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getVerCheckRecord" resultType="com.tecsun.siboss.tsbm.modules.version.entity.VerCheckRecordVO" parameterType="java.lang.Long">
+        select id, device_id, device_type, area_id, curr_version,latest_version,
+               latest_version_id,need_update,opt_user,description,opt_time
+        FROM t_tsbm_vercheck_record where id=#{id}
+    </select>
+
+    <select id="deleteVerCheckRecord" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        delete from t_tsbm_vercheck_record where id=#{id}
+    </select>
+
+    <select id="addVerCheckRecord" resultType="java.lang.Integer" parameterType="java.util.Map">
+        insert into t_tsbm_vercheck_record
+        (id, device_id, device_type, area_id, curr_version,latest_version,
+         latest_version_id,need_update,opt_user,description,opt_time
+        )
+        values
+        (t_tsbm_version_record_seq.nextval, #{deviceId}, #{deviceType}, #{areaId}, #{currVersion},
+          #{latestVersion},#{latestVersionId},#{needUpdate},#{optUser},#{description},#{optTime}
+        )
+    </select>
+
+</mapper>

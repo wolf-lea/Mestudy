@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.settle.SettleStatisticsServiceImpl">
+
+    <!--全市医保结算刷卡量统计-->
+    <select id="getSettleCountByMonth" resultType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.SettleStatisticsBean">
+
+        select count(1)as count,to_char(结算日期,'yyyy-mm')as time
+        from 个人医疗结算信息
+        group by to_char(结算日期,'yyyy-mm')
+        order by time
+
+    </select>
+
+    <!--各区县医保结算刷卡量统计-->
+    <select id="getSettleCountByDistrict" resultType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.SettleStatisticsBean">
+
+        select (select b.aaa103  from aa10_t b  where b.aaa100='AAB034'  and b.aaa102= a.aab034) as district ,count(1) as count
+        from AC01_2017CJTJ a,个人医疗结算信息 b
+        where a.aac001 = b.个人编号
+        group by a.aab034
+
+    </select>
+
+
+</mapper>

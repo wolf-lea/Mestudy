@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.card.CardCabinetServiceImpl">
+
+    <insert id="insertCabinet" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardCabinetVO">
+    	<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select seq_card_cabinet.nextval from dual
+        </selectKey>
+        insert into card_cabinet(id,ccid,userid,create_time) values(#{id},#{ccid},#{userid},sysdate)
+    </insert>
+    
+    <insert id="insertFloor" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardFloorVO">
+    	<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select seq_card_floor.nextval from dual
+        </selectKey>
+        insert into card_floor(id,cfid,ccid,create_time) values(#{id},
+		(select case when max(f.cfid) is null then 1 else max(f.cfid)+1 end from card_cabinet c,card_floor f where c.id=f.ccid and c.id=#{ccid}),
+		#{ccid},sysdate)
+    </insert>
+    
+    <insert id="insertBox" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardBoxVO">
+    	<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select seq_card_box.nextval from dual
+        </selectKey>
+       	insert into card_box(id,cbid,cfid,create_time,maxnum) values(#{id},
+		(select case when max(b.cbid) is null then 1 else max(b.cbid)+1 end from card_box b,card_floor f where f.id=b.cfid and f.id=#{cfid}),
+		#{cfid},sysdate,#{maxnum})
+    </insert>
+    
+    <select id="queryCabinets" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardCabinetVO" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardCabinetVO">
+    	select t.id,t.userid,t.ccid,t.create_time as createtime,t.update_time as updatetime
+    	from CARD_CABINET t
+    	where t.userid =#{userid}
+    	order by t.ccid
+    </select>
+    
+    <select id="queryFloors" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardFloorVO" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardFloorVO">
+    	select t.id,t.ccid,t.cfid,t.create_time as createtime,t.update_time as updatetime from CARD_FLOOR t where t.ccid =#{ccid} order by t.cfid
+    </select>
+    
+    <select id="queryBoxs" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardBoxVO" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardBoxVO">
+    	select t.id,t.cbid,t.cfid,t.maxnum,t.create_time as createtime,t.update_time as updatetime from CARD_BOX t where t.cfid =#{cfid} order by t.cbid
+    </select>
+    
+    <select id="isHaveCard" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.card.CardCabinetBean" 
+    resultType="java.lang.Integer">
+    	select count(*) from card_store s,card_box b,card_floor f,card_cabinet c where c.id=f.ccid and f.id=b.cfid and b.id=s.cbid
+    	<if test="ccaid !=null and ccaid != '' " >
+    		and c.id=#{ccaid}
+    	</if>
+    	<if test="cfid !=null and cfid != '' ">
+    		and f.id=#{cfid}
+    	</if>
+    	<if test="cbid !=null and cbid != '' ">
+    		and b.id=#{cbid}
+    	</if>
+    </select>
+    
+    
+    <delete id="deleteBoxs" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardBoxVO">
+    	delete from CARD_BOX t where  t.id =#{id}
+    </delete>
+    <delete id="deleteFloors" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardFloorVO">
+    	delete from CARD_Floor t where  t.id =#{id}
+    </delete>
+    <delete id="deleteCabinets" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardCabinetVO">
+    	delete from CARD_Cabinet t where  t.id =#{id}
+    </delete>
+    <update id="updateMaxNum" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardBoxVO">
+    	update CARD_BOX t set t.maxnum=#{maxnum} where t.id =#{cbid}
+    </update>
+    <update id="updateCcid" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.card.CardCabinetVO">
+    	update CARD_Cabinet t set t.ccid=#{ccid} where t.id =#{id}
+    </update>
+</mapper>

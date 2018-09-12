@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.statistics.StatisticsServiceImpl">
+
+    <select id="statisticCardStore" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+    	select i.inyear||'-'||i.inmounth as key,i.nums as value from(
+		select  n.inmounth,n.inyear,count(*) nums from
+		(select to_char(t.input_time,'yyyy') inyear,to_char(t.input_time,'mm') inmounth,to_char(t.input_time,'dd') inday
+		from CARD_INFO t where 1=1
+		<if test="fkwd !=null and fkwd != ''">
+			and t.fkwd=#{fkwd}
+		</if>
+        <if test="startdate !=null and startdate != ''">
+            and t.input_time &gt; to_date(#{startdate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="enddate !=null and enddate != ''">
+            and t.input_time &lt;= to_date(#{enddate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		) n group by n.inmounth,n.inyear) i
+        order by i.inyear||'-'||i.inmounth asc
+    </select>
+
+    <select id="statisticCardReceive" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+    	select i.inyear||'-'||i.inmounth as key,i.nums as value from(
+		select  n.inmounth,n.inyear,count(*) nums from
+		(select to_char(t.receive_time,'yyyy') inyear,to_char(t.receive_time,'mm') inmounth,to_char(t.receive_time,'dd') inday
+		from Card_Receive t ,card_info i where i.id=t.ciid
+		<if test="fkwd !=null and fkwd != ''">
+			and i.fkwd=#{fkwd}
+		</if>
+        <if test="startdate !=null and startdate != ''">
+            and t.receive_time &gt; to_date(#{startdate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="enddate !=null and enddate != ''">
+            and t.receive_time &lt;= to_date(#{enddate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		) n group by n.inmounth,n.inyear) i
+        order by i.inyear||'-'||i.inmounth asc
+    </select>
+
+	<select id="statisticCardReceiveTwo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean"
+			resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+		select b.fkwd as key ,count(*)  as value from card_receive a,card_info  b where a.ciid=b.id
+		<if test="fkwd !=null and fkwd != ''">
+			and b.fkwd=#{fkwd}
+		</if>
+		<if test="bDate!=null and bDate!=''">
+			and a.receive_time &gt;= to_date(#{bDate,jdbcType=VARCHAR}, 'yyyy-mm-dd hh24:mi:ss')
+		</if>
+		<if test="eDate!=null and eDate!=''">
+			and a.receive_time &lt;= to_date(#{eDate,jdbcType=VARCHAR}, 'yyyy-mm-dd hh24:mi:ss')
+		</if>
+		group by b.fkwd
+	</select>
+
+    <select id="statisticCardProblem" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+    	select t.status as key,count(*) as value
+		from card_retention t,card_info i where  i.id=t.ciid
+		<if test="fkwd !=null and fkwd != ''">
+			and i.fkwd=#{fkwd}
+		</if>
+        <if test="startdate !=null and startdate != ''">
+            and t.retention_time &gt; to_date(#{startdate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="enddate !=null and enddate != ''">
+            and t.retention_time &lt;= to_date(#{enddate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		 group by t.status
+    </select>
+
+    <select id="statisticCardRetention" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+    	select i.inyear||'-'||i.inmounth as key,i.nums as value from(
+		select  n.inmounth,n.inyear,count(*) nums from
+		(select to_char(t.retention_time,'yyyy') inyear,to_char(t.retention_time,'mm') inmounth,to_char(t.retention_time,'dd') inday
+		from CARD_INFO t where t.status=4
+		<if test="fkwd !=null and fkwd != ''">
+			and t.fkwd=#{fkwd}
+		</if>
+        <if test="startdate !=null and startdate != ''">
+            and t.retention_time &gt; to_date(#{startdate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="enddate !=null and enddate != ''">
+            and t.retention_time &lt;= to_date(#{enddate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		) n group by n.inmounth,n.inyear) i
+        order by i.inyear||'-'||i.inmounth asc
+    </select>
+
+    <select id="statisticCardActivation" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+    	select i.inyear||'-'||i.inmounth as key,i.nums as value from(
+		select  n.inmounth,n.inyear,count(*) nums from
+		(select to_char(t.activetime,'yyyy') inyear,to_char(t.activetime,'mm') inmounth,to_char(t.activetime,'dd') inday
+		from CARD_INFO t where t.status=7 and t.sync_status is null
+		<if test="fkwd !=null and fkwd != ''">
+			and t.fkwd=#{fkwd}
+		</if>
+        <if test="startdate !=null and startdate != ''">
+            and t.activetime &gt; to_date(#{startdate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="enddate !=null and enddate != ''">
+            and t.activetime &lt;= to_date(#{enddate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		) n group by n.inmounth,n.inyear) i
+        order by i.inyear||'-'||i.inmounth asc
+    </select>
+
+    <select id="statisticCardCabinet" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.statistics.StatisticsBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.statistics.StatisticsVO">
+    	select 'sum' as key,count(*) as value from card_info i where 1=1
+		<if test="fkwd !=null and fkwd != ''">
+			and i.fkwd=#{fkwd}
+		</if>
+        <if test="startdate !=null and startdate != ''">
+            and i.input_time &gt; to_date(#{startdate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="enddate !=null and enddate != ''">
+            and i.input_time &lt;= to_date(#{enddate}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+    </select>
+    
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.iface.server.model.dao.so.ResidentsInsuranceDao">
+
+	<select id="simisCheckoutIdCard" parameterType="java.util.Map" resultType="java.lang.Integer">
+		select count(0) from v_grxx g where g.aac002=#{idCard,jdbcType=VARCHAR}
+		<if test="aaz001 != null and aaz001 != ''"> and (g.AAF017=#{aaz001,jdbcType=VARCHAR} or g.AAA027=#{aaz001,jdbcType=VARCHAR}) </if>
+	</select>
+
+	<select id="simisGetEndowInfoPerson" parameterType="java.util.Map"
+			resultType="com.tecsun.sisp.iface.common.vo.so.po.endow.GrxxPO">
+		select * from v_grxx g where g.aac002=#{idCard,jdbcType=VARCHAR} 
+		<if test="aaz001 != null and aaz001 != ''"> and (g.AAF017=#{aaz001,jdbcType=VARCHAR} or g.AAA027=#{aaz001,jdbcType=VARCHAR}) </if>
+	</select>
+
+	<select id="simisCountEndowPayPerson" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(0) from v_grjf t where t.aac001=#{aac001,jdbcType=VARCHAR}
+	</select>
+
+	<select id="simisGetEndowPayPerson" parameterType="com.tecsun.sisp.iface.common.vo.common.query.SecQueryBean"
+			resultType="com.tecsun.sisp.iface.common.vo.so.po.endow.GrjfPO">
+		select * from v_grjf where aac001=#{aac001}
+	</select>
+
+	<select id="simisCountEndowAccountPerson" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(0) from v_grzh t where aac001=#{aac001}
+	</select>
+
+	<select id="simisGetEndowAccountPerson" parameterType="com.tecsun.sisp.iface.common.vo.common.query.SecQueryBean"
+			resultType="com.tecsun.sisp.iface.common.vo.so.po.endow.GrzhPO">
+		select * from v_grzh where aac001=#{aac001}
+	</select>
+
+	<select id="simisCountEndowAnnuityPerson" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(0) from v_grff t where aac001=#{aac001}
+	</select>
+
+	<select id="simisGetEndowAnnuityPerson" parameterType="com.tecsun.sisp.iface.common.vo.common.query.SecQueryBean"
+			resultType="com.tecsun.sisp.iface.common.vo.so.po.endow.GrffPO">
+		select * from v_grff where aac001=#{aac001}
+	</select>
+	
+	<select id="simisCountEndowPayStandardPerson" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(0) from v_jfbz t where aac001=#{aac001}
+	</select>
+
+	<select id="simisEndowPayStandardPerson" parameterType="com.tecsun.sisp.iface.common.vo.common.query.SecQueryBean"
+			resultType="com.tecsun.sisp.iface.common.vo.so.po.endow.JfbzPO">
+		select * from v_jfbz where aac001=#{aac001}
+	</select>
+
+</mapper>

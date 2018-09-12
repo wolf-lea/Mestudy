@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.temporaryCard.TempStatisticsServiceImpl">
+
+    <!--临时卡市人社统计-->
+    <select id="getTempCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.TempStatisticsBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.TempStatisticsVO">
+        select sum(card_instore_num)as cardInstoreNum,sum(card_grant_num)as cardGrantNum,sum(card_surplus_num)as cardSurplusNum,
+        sum(recovery_num)as recoveryNum,sum(waste_card_num)as wasteCardNum,sum(cancel_num)as cancelNum,
+        o.parent_org_id,(select name from sisp_public.t_org where org_id=o.parent_org_id)as name
+        from tempcard_info i,sisp_public.t_org o where i.rkwd=o.org_id and o.parent_org_id !=0
+
+        <if test="bank!=null and bank!=''">
+            and o.parent_org_id=#{bank}
+        </if>
+        group by o.parent_org_id
+    </select>
+
+    <!--临时卡区县人社统计-->
+    <select id="getTempDistinctCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.TempStatisticsBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.TempStatisticsVO">
+        select sum(card_instore_num)as cardInstoreNum,sum(card_grant_num)as cardGrantNum,sum(card_surplus_num)as cardSurplusNum,
+        sum(recovery_num)as recoveryNum,sum(waste_card_num)as wasteCardNum,sum(cancel_num)as cancelNum,
+        o.parent_org_id,(select name from sisp_public.t_org where org_id=o.parent_org_id)as name
+        from tempcard_info i,sisp_public.t_org o
+        where i.rkwd=o.org_id and o.parent_org_id !=0
+        <if test="distinctId!=null and distinctId!=''">
+            and o.distinct_id=#{distinctId}
+        </if>
+        <if test="bank!=null and bank!=''">
+            and o.parent_org_id=#{bank}
+        </if>
+        group by o.parent_org_id
+    </select>
+
+    <!--临时卡银行统计-->
+    <select id="getTempBankCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.TempStatisticsBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.TempStatisticsVO">
+        select i.*,o.name from tempcard_info i,sisp_public.t_org o
+        where i.rkwd=o.org_id
+        and o.parent_org_id=#{rkwd}
+    </select>
+
+    <!--临时卡网点统计-->
+    <select id="getTempBranchCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.TempStatisticsBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.TempStatisticsVO">
+        select i.*,o.name from tempcard_info i,sisp_public.t_org o
+        where i.rkwd=o.org_id
+        <if test="rkwd!=null and rkwd!=''">
+            and i.rkwd=#{rkwd}
+        </if>
+    </select>
+
+    <!--#################报表统计######################-->
+    <!-- 制卡成功数量-->
+    <select id="getMakeCardCount"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select i.org_id as id,count(*) as cardCount from CARD_INFO t ,sisp_public.t_org i
+        where t.fkwd=i.org_code
+        <choose>
+            <!--  如果是市直保中心 默认查询四个区县下面的所有网点-->
+            <when test="null!=countryId and countryId=='220200'">
+                and i.DISTINCT_ID in ('220203','220211','220202','220204')
+            </when>
+            <otherwise>
+                and  t.fkwd
+                <foreach collection="orgCodes" item="orgCode" open="in (" close=")" separator=",">
+                    #{orgCode,jdbcType=VARCHAR}
+                </foreach>
+            </otherwise>
+        </choose>
+
+        <if test="beginTime!=null and beginTime!=''">
+            and t.INPUT_TIME &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.INPUT_TIME &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by i.org_id
+
+    </select>
+    <!--发卡总量-->
+    <select id="getGrantCardCount"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+
+        select i.org_id as id,count(*) as cardCount from CARD_INFO t,sisp_public.t_org i
+        where t.fkwd=i.org_code and t.status in(6,7) and t.sync_status is null
+        <choose>
+            <when test="null!=countryId and countryId=='220200'">
+                and i.DISTINCT_ID in ('220203','220211','220202','220204')
+            </when>
+            <otherwise>
+                and t.fkwd
+                <foreach collection="orgCodes" item="orgCode" open="in (" close=")" separator=",">
+                    #{orgCode,jdbcType=VARCHAR}
+                </foreach>
+            </otherwise>
+        </choose>
+        <if test="beginTime!=null and beginTime!=''">
+            and t.activetime &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.activetime &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by i.org_id
+
+    </select>
+    <!--临时卡发卡总量-->
+    <select id="getTempGrantCard"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+
+        select i.org_id as id,count(*) as cardCount  from Tempcard_detail t,sisp_public.t_org i
+        where t.rkwd=i.org_id and status='01'
+        <choose>
+            <!--此处需要根据实际 市直保中心的DISTINCT_ID进行匹配  底下的DISTINCT_ID 需要根据实际的四个区县-->
+            <when test="null!=countryId and countryId=='220200'">
+                and i.DISTINCT_ID in ('220203','220211','220202','220204')
+            </when>
+            <otherwise>
+                and  t.rkwd
+                <foreach collection="orgIds" item="orgId" open="in (" close=")" separator=",">
+                    #{orgId,jdbcType=INTEGER}
+                </foreach>
+            </otherwise>
+        </choose>
+        <if test="beginTime!=null and beginTime!=''">
+            and t.update_TIME &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.update_TIME &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by i.org_id
+    </select>
+    <!-- 网点 制卡成功数量-->
+    <select id="getBranchMakeCardCount"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select count(*) as makeCardCount,i.org_id as id from CARD_INFO t, sisp_public.t_org i
+        where t.fkwd=i.org_code and t.fkwd =#{orgCode}
+        <if test="beginTime!=null and beginTime!=''">
+            and t.INPUT_TIME &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.INPUT_TIME &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by i.org_id
+
+    </select>
+    <!-- 网点 发卡成功数量-->
+    <select id="getBranchGrantCardCount"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select i.org_id as id,count(*) as grantCardCount from CARD_INFO t, sisp_public.t_org i
+        where t.fkwd=i.org_code and t.fkwd =#{orgCode} and t.status in(6,7) and t.sync_status is null
+        <if test="beginTime!=null and beginTime!=''">
+            and t.activetime &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.activetime &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by i.org_id
+    </select>
+    <!-- 网点 临时卡发卡成功数量-->
+    <select id="getBranchTempGrantCardCount"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select i.org_id as id,count(*) as tempGrantCardCount from Tempcard_detail t, sisp_public.t_org i
+         where  t.rkwd=i.org_id  and t.rkwd =#{branchId} and t.status='01'
+        <if test="beginTime!=null and beginTime!=''">
+            and t.update_TIME &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.update_TIME &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+         group by i.org_id
+    </select>
+
+    <!-- 按区县统计制卡数量 发卡数量 临时卡发卡数量-->
+    <select id="getCardCountByDistinct"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select d.name,count(1) as makeCardCount,
+        nvl(
+        (select tt.grantCardCount from (select count(1)as grantCardCount,d1.name
+        from card_info t1,sisp_public.t_org i1,sisp_public.t_distinct d1
+        where t1.fkwd=i1.org_code and i1.distinct_id=d1.distinct_id and t1.status in(6,7) and t1.sync_status is null
+        <if test="bank!=null and bank!=''">
+            and t1.bank = #{bank}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t1.activetime &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t1.activetime &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by d1.name)tt where tt.name=d.name),0) as grantCardCount,
+        (select tt2.tempGrantCardCount from (select count(1)as tempGrantCardCount,d2.name
+        from tempcard_detail t2,tempcard_box b2,sisp_public.t_org i2,sisp_public.t_distinct d2
+        where t2.rkwd=b2.rkwd and t2.rkwd=i2.org_id and i2.distinct_id=d2.distinct_id and t2.status='01'
+        <if test="bank!=null and bank!=''">
+            and b2.bank = #{bank}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t2.update_TIME &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t2.update_TIME &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by d2.name)tt2 where tt2.name=d.name
+        )as tempGrantCardCount
+        from card_info t ,sisp_public.t_org i,sisp_public.t_distinct d
+        where t.fkwd=i.org_code and i.distinct_id=d.distinct_id
+        <if test="bank!=null and bank!=''">
+            and t.bank = #{bank}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t.input_time &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.input_time &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by d.name
+        order by grantCardCount desc
+
+    </select>
+
+    <!-- 按银行统计制卡数量 发卡数量 临时卡发卡数量-->
+    <select id="getCardCountByBank"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select o.name,s.makeCardCount,s.grantCardCount,s.tempGrantCardCount from (
+        select t10.bank,count(1) as makeCardCount,
+        nvl(
+        (select tt.grantCardCount from (select count(1)as grantCardCount,t11.bank from (
+        select t1.* from CARD_INFO t1,sisp_public.t_org i1
+        where t1.fkwd=i1.org_code and t1.status in(6,7) and t1.sync_status is null
+        <if test="distinctId!=null and distinctId!=''">
+            and i1.distinct_id = #{distinctId}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t1.activetime &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t1.activetime &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        )t11
+        group by t11.bank)tt
+        where tt.bank=t10.bank),0) as grantCardCount,
+        (select tt2.tempGrantCardCount from (select count(1)as tempGrantCardCount,t12.bank from (
+        select t2.*,b2.bank
+        from tempcard_detail t2,tempcard_box b2,sisp_public.t_org i2
+        where t2.rkwd=b2.rkwd and t2.rkwd=i2.org_id and t2.status='01'
+        <if test="distinctId!=null and distinctId!=''">
+            and i2.distinct_id = #{distinctId}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t2.update_TIME &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t2.update_TIME &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        )t12
+        group by t12.bank)tt2 where tt2.bank=t10.bank
+        )as tempGrantCardCount
+        from (
+        select t.*
+        from CARD_INFO t ,sisp_public.t_org i
+        where t.fkwd=i.org_code
+        <if test="distinctId!=null and distinctId!=''">
+            and i.distinct_id = #{distinctId}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t.input_time &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.input_time &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        )t10
+        group by t10.bank
+        )s,sisp_public.t_org o
+        where s.bank=o.org_code
+        order by s.grantCardCount desc
+
+    </select>
+
+    <!--查询银行编码和区县编码-->
+    <select id="getBankOrDistinctByUserId"
+            parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.temporaryCard.CardCountBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.temporaryCard.CardCountVO">
+        select o.org_code as bank,o.distinct_id from sisp_public.t_org o,sisp_public.t_user u
+        where o.org_id=u.org_id and o.parent_org_id in(0,1) and u.user_id=#{userId}
+    </select>
+
+
+</mapper>

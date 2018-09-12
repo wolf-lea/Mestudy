@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.receive.CardReceiveServiceImpl">
+
+    <select id="queryCardReceive" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.receive.QueryCardReceiveBean" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.receive.CardReceiveLogVO">
+    	select i.name, i.idcard,i.cardid,i.company_name companyname,r.receive_time receivetime,i.status,i.old_cfwz oldcfwz,r.type,
+		<![CDATA[ case when r.type<2 then r.photo else a.photo end photo,
+		case when r.type<2 then i.phone else a.phone end phone,
+		case when r.type<2 then i.name else a.name end agentname,
+		case when r.type<2 then i.idcard else a.idcard end agentidcard,
+		case when r.type<2 then r.idcard_photo_up else a.idcard_photo_up end idcardphotoup,
+		case when r.type<2 then r.idcard_photo_down else a.idcard_photo_down end idcardphotodown,
+		case when r.type<2 then r.sign_photo else a.sign_photo end signphoto]]> 
+		from card_info i left join card_receive r on r.ciid=i.id left join card_agent a on a.agentid=r.agentid
+		<where>
+			1=1 and i.sync_status is null and i.status in (6,7,10)
+			<if test="userid !=null and userid != ''"> and i.fkwd=#{userid}</if>
+			<if test="idcard !=null and idcard != ''"> and i.idcard=#{idcard}</if>
+			<if test="ciid !=null and ciid != ''"> and r.ciid=#{ciid}</if>
+			<if test="name !=null and name != ''"> and i.name=#{name}</if>
+			<if test="cardid !=null and cardid != ''"> and i.cardid=#{cardid}</if>
+			<if test="company_code !=null and company_code != ''"> and i.company_code=#{company_code}</if>
+		</where>
+		order by r.receive_time asc
+    </select>
+    <select id="queryAgent" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.receive.CardAgentVO" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.receive.CardAgentVO">
+    	select * from card_agent a where a.idcard=#{idcard}
+    </select>
+    <insert id="insertCardReceive" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.receive.CardReceiveVO">
+    	<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select seq_card_receive.nextval from dual
+        </selectKey>
+       	insert into card_receive(id,ciid,type,receive_time,photo,idcard_photo_up,idcard_photo_down,sign_photo,agentid) 
+		values (#{id},#{ciid},#{type},
+		 <choose>
+                <when test="receive_time !=null and receive_time != ''">
+                       to_date(#{receive_time}, 'yyyy-mm-dd hh24:mi:ss'),
+                </when>
+                <otherwise>
+                       sysdate,
+                 </otherwise>
+         </choose>
+		#{photo},#{idcard_photo_up},#{idcard_photo_down},#{sign_photo},#{agentid})
+    </insert>
+    <insert id="insertCardAgent" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.receive.CardAgentVO">
+    	<selectKey keyProperty="agentid" resultType="java.lang.Integer" order="BEFORE">
+            select seq_card_agent.nextval from dual
+        </selectKey>
+       	insert into card_agent(agentid,photo,idcard_photo_up,idcard_photo_down,sign_photo,idcard,name,phone) 
+		values (#{agentid},#{photo},#{idcard_photo_up},#{idcard_photo_down},#{sign_photo},#{idcard},#{name},#{phone})
+    </insert>
+    <insert id="insertPrintLog" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.receive.PrintLogVO">
+    	<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select SEQ_CARD_PRINT_LOG.nextval from dual
+        </selectKey>
+       insert into  CARD_INFO_PRINT_LOG(id,Idcard,Name,Print_Time,receivenum) values (#{id},#{idcard},#{name},sysdate,#{receivenum})
+    </insert>
+    
+</mapper>

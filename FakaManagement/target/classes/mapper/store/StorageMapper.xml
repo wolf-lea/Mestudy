@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.store.StorageServiceImpl">
+
+    <!-- 通过单张卡查询库存信息-->
+    <select id="queryStorageByPerson" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+            select batch_no,REGEXP_SUBSTR(kg_zxwz,'[^-]+',1,2,'i') as bin,REGEXP_SUBSTR(kg_zxwz,'[^-]+',1,3,'i') as box
+            from card_batch_detail where idcard=#{idcard}
+    </select>
+
+    <!-- 入库信息查询-->
+    <select id="queryStorage" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.StorageVo">
+        <!--当入库方式为空时查询-->
+		<if test="method == null or method == ''">
+            select * from (select t.batch_id batch_id,t.qy,
+            (select distinct(batch_no) from card_batch where id = t.batch_id) batch_no,
+            (select distinct(bank) from card_batch where id = t.batch_id) bank,
+            (select count(distinct(bin)) from CARD_BATCH_BINBOX q where q.batch_id=t.batch_id and q.qy=t.qy and q.status='00') bin ,
+            (select count(*) from CARD_BATCH_BINBOX q where q.batch_id=t.batch_id and q.qy=t.qy and q.status='00')  box
+            --,(select count(*) from CARD_BATCH_DETAIL d where d.batch_binbox_id in (select b.id from CARD_BATCH_BINBOX b where b.status='00' and b.batch_id=t.batch_id and b.qy=t.qy)) cardNum
+            from CARD_BATCH_BINBOX t
+            where t.status='00' group by t.batch_id,t.qy)
+            where batch_id in (select distinct id from card_batch where fb_status='01')
+            and bank=#{bank}
+            and (qy in
+            <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                #{qy}
+            </foreach>
+            or qy='220200' or qy='220000')
+            <if test="batchNo != null and method != ''">
+                and batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+            </if>
+            <if test="bin != null and bin != ''">
+                and bin=#{bin}
+            </if>
+        </if>
+        <!--当入库方式为按盒-->
+        <if test="method == '00'">
+            select * from (
+            select t.id,batch_id,t.bin ,box ,t.qy,t.status,t.rkwd,
+            (select distinct(batch_no) from card_batch where id = t.batch_id) batch_no,
+            (select distinct(bank) from card_batch where id = t.batch_id) bank
+            --,(select count(*) from CARD_BATCH_DETAIL d where d.batch_binbox_id=t.id) cardNum
+            from CARD_BATCH_BINBOX t
+            ) --where t.status='00')
+            where batch_id in (select distinct id from card_batch where fb_status='01')
+            and bank=#{bank}
+            and (qy in
+            <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                #{qy}
+            </foreach>
+            or qy='220200' or qy='220000')
+            <if test="batchNo != null and batchNo != ''">
+                and batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+            </if>
+            <if test="bin != null and bin != ''">
+                and bin=#{bin}
+            </if>
+            <if test="box != null and box != ''">
+                and box=#{box}
+            </if>
+            <if test="status != null and status != ''">
+                and status=#{status}
+            </if>
+        </if>
+        <!--当入库方式为按箱-->
+        <if test="method == '01'">
+            select * from (select batch_id,t.bin ,t.qy,
+            (select distinct(batch_no) from card_batch where id = t.batch_id) batch_no,
+            (select count(*) from CARD_BATCH_BINBOX c where c.batch_id=t.batch_id and c.bin=t.bin and c.qy=t.qy and c.status='00') box,
+            (select distinct(bank) from card_batch where id = t.batch_id) bank
+            --,(select count(*) from CARD_BATCH_DETAIL d where d.batch_binbox_id in (select b.id from CARD_BATCH_BINBOX b where b.status='00' and b.batch_id=t.batch_id and b.bin=t.bin and b.qy=t.qy)) cardNum
+            from CARD_BATCH_BINBOX t
+            where t.status='00' group by t.batch_id,t.qy,t.bin)
+            where batch_id in (select distinct id from card_batch where fb_status='01')
+            and bank=#{bank}
+            and (qy in
+            <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                #{qy}
+            </foreach>
+            or qy='220200' or qy='220000')
+            <if test="batchNo != null and batchNo != ''">
+                and batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+            </if>
+            <if test="bin != null and bin != ''">
+                and bin=#{bin}
+            </if>
+        </if>
+        <!--当入库方式为批次时查询-->
+        <if test="method == '02'">
+            select * from (select t.batch_id batch_id,t.qy,
+            (select distinct(batch_no) from card_batch where id = t.batch_id) batch_no,
+            (select distinct(bank) from card_batch where id = t.batch_id) bank,
+            (select count(distinct(bin)) from CARD_BATCH_BINBOX q where q.batch_id=t.batch_id and q.qy=t.qy and q.status='00') bin ,
+            (select count(*) from CARD_BATCH_BINBOX q where q.batch_id=t.batch_id and q.qy=t.qy and q.status='00')  box
+            --,(select count(*) from CARD_BATCH_DETAIL d where d.batch_binbox_id in (select b.id from CARD_BATCH_BINBOX b where b.status='00' and b.batch_id=t.batch_id and b.qy=t.qy)) cardNum
+            from CARD_BATCH_BINBOX t
+            where t.status='00' group by t.batch_id,t.qy)
+            where batch_id in (select distinct id from card_batch where fb_status='01')
+            and bank=#{bank}
+            and (qy in
+            <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                #{qy}
+            </foreach>
+            or qy='220200' or qy='220000')
+            <if test="batchNo != null and batchNo != ''">
+                and batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+            </if>
+        </if>
+    </select>
+
+    <!-- 入库 查询【批次明细表 CARD_BATCH_DETAIL】的数据-->
+    <select id="selectStorageByBox" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.StorageInfoVo">
+        select seq_card_info.nextval as id,d.batch_id,d.batch_binbox_id,
+        d.name,d.idcard,d.cardid,d.batch_no,d.company_code,
+        d.company_name,d.name as angent,d.phone,d.address,d.kg_zxwz,b.rkwd as fkwd,d.bank,d.city,
+        d.xt_zxwz
+        from CARD_BATCH_DETAIL d,CARD_BATCH_BINBOX b
+        where
+        b.status='00' and b.batch_id=d.batch_id and b.id=d.BATCH_BINBOX_ID
+        <!--入库方式为按批次-->
+        and d.batch_no=#{batchNo}
+        <!--当入库方式为按箱-->
+        <if test="method == '01'">
+        and REGEXP_SUBSTR(d.kg_zxwz,'[^-]+',1,2,'i')=#{bin}
+        </if>
+        <!--当入库方式为按盒-->
+        <if test="method == '00'">
+        and REGEXP_SUBSTR(d.kg_zxwz,'[^-]+',1,2,'i')=#{bin}
+        and REGEXP_SUBSTR(d.kg_zxwz,'[^-]+',1,3,'i')=#{box}
+        </if>
+    </select>
+
+    <!-- 按批次入柜分解查询所有盒 -->
+    <select id="selectAllBoxByBatchNo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+        select t.batch_no,b.bin,b.box
+        from CARD_BATCH t,CARD_BATCH_BINBOX b
+        where t.id=b.batch_id and b.status='00' and t.batch_no=#{batchNo}
+    </select>
+
+    <!-- 入库 修改【批次箱盒表 CARD_BATCH_BINBOX】中状态-->
+    <update id="updateStorageByBox" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+        update CARD_BATCH_BINBOX set status='01',rkwd=#{fkwd},ccid=#{ccaid},update_time=sysdate where
+        status='00' and
+        <!--入库方式为按批次-->
+        batch_id=(select distinct(id) from card_batch where batch_no = #{batchNo})
+        <!--当入库方式为按箱-->
+        <if test="method == '01'">
+        and bin=#{bin}
+        </if>
+        <!--当入库方式为按盒-->
+        <if test="method == '00'">
+        and bin=#{bin}
+        and box=#{box}
+        </if>
+    </update>
+
+    <!-- 入库 插入【社保卡基本信息表 CARD_INFO】-->
+    <insert id="insertStorageByBox" parameterType="java.util.List">
+        insert into CARD_INFO
+        (ID,NAME,IDCARD,CARDID,BATCH_NO,COMPANY_CODE,
+        COMPANY_NAME,ANGENT,PHONE,ADDRESS,OLD_CFWZ,STATUS,FKWD,BANK,REGINALCODE,
+        INPUT_TIME,XT_ZXWZ)
+        select A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION">
+            SELECT #{item.id},#{item.name},#{item.idcard},#{item.cardid},#{item.batchNo},#{item.companyCode},
+            #{item.companyName},#{item.angent},#{item.phone},#{item.address},#{item.kgZxwz},2,#{item.fkwd},#{item.bank},#{item.city},
+            sysdate,#{item.xtZxwz} FROM DUAL
+        </foreach>
+        ) A
+    </insert>
+
+    <!-- 入库 插入【社保卡基本位置表 CARD_STORE】-->
+    <insert id="insertStorageStoreByBox" parameterType="java.util.List">
+        insert into card_store (ID,csid,ciid,ccid,store_time,bin,box)
+        select seq_card_store.nextval,A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION">
+            SELECT REGEXP_SUBSTR(#{item.kgZxwz},'[^-]+',1,4,'i'),
+            #{item.id},#{item.ccaid},sysdate,REGEXP_SUBSTR(#{item.kgZxwz},'[^-]+',1,2,'i'),
+            REGEXP_SUBSTR(#{item.kgZxwz},'[^-]+',1,3,'i') FROM DUAL
+        </foreach>
+        ) A
+    </insert>
+
+    <!-- 入库 记录操作日志【批次操作日志表 CARD_BATCH_LOG】-->
+    <insert id="insertStorageStoreByBoxLog" parameterType="java.util.List" >
+        insert into CARD_BATCH_LOG t (t.id,t.userid,t.batch_id,t.bus_type,t.BATCH_BINBOX_ID,t.create_time)
+        select seq_card_batch_log.nextval,A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION">
+            SELECT #{item.userid},#{item.batchId},'03',#{item.batchBinBoxId}, sysdate FROM DUAL
+        </foreach>
+        ) A
+    </insert>
+
+    <!-- 已入库信息查询-->
+    <select id="storageRecover" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.StorageVo">
+        select * from (
+        select t.id,batch_id,t.bin,box,t.qy,t.rkwd,t.update_time,
+        (select distinct(batch_no) from card_batch where id = t.batch_id) batch_no,
+        (select distinct(bank) from card_batch where id = t.batch_id) bank
+        from CARD_BATCH_BINBOX t
+        where t.status='01')
+        WHERE bank=#{bank}
+        and (qy in
+        <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+            #{qy}
+        </foreach>
+        or qy='220200' or qy='220000')
+        <if test="batchNo != null and batchNo != ''">
+            and batch_no=#{batchNo}
+        </if>
+        <if test="bin != null and bin != ''">
+            and bin=#{bin}
+        </if>
+        <if test="box != null and box != ''">
+            and box=#{box}
+        </if>
+    </select>
+    <!--查询卡数量-->
+    <select id="getCardNum" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.StorageVo">
+        select count(*) as cardNum from CARD_BATCH_DETAIL where batch_binbox_id=#{id}
+    </select>
+
+    <!-- 已入库数据追回 判断追回的数据中是否存在已发卡数据 有则不允许追回-->
+    <select id="storageIsGet" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="int">
+        select count(*) from CARD_INFO t
+        where
+        REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,1,'i')=(select batch_no from card_batch where id = (select batch_id from CARD_BATCH_BINBOX where id=#{id}))
+        and REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,2,'i')=(select bin from CARD_BATCH_BINBOX where id=#{id})
+        and REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,3,'i')=(select box from CARD_BATCH_BINBOX where id=#{id})
+        and t.status='7' and t.sync_status is null
+    </select>
+
+    <!-- 已入库数据追回 修改批次箱盒表 CARD_BATCH_BINBOX -->
+    <update id="updateBinBoxById" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+        update CARD_BATCH_BINBOX b set b.rkwd=#{fkwd},b.ccid=#{ccaid},b.update_time=sysdate where b.id=#{id}
+    </update>
+
+    <!-- 已入库数据追回 修改社保卡基本信息表 CARD_INFO -->
+    <update id="updateCardInfoById" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+        update CARD_INFO t set t.fkwd=#{fkwd} where
+        t.batch_no=#{batchNo}
+        and REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,2,'i')=#{bin}
+        and REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,3,'i')=#{box}
+    </update>
+
+    <!-- 已入库数据追回 修改卡存放位置表 CARD_STORE -->
+    <update id="updateCardStoreById" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+        update card_store set ccid=#{ccaid} where ciid in(
+        select id from CARD_INFO t where
+        t.batch_no=#{batchNo}
+        and REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,2,'i')=#{bin}
+        and REGEXP_SUBSTR(t.old_cfwz,'[^-]+',1,3,'i')=#{box}
+        )
+    </update>
+
+    <!--查询批次ID-->
+    <select id="getBatchId" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean">
+        select batch_id from CARD_BATCH_BINBOX b where b.id=#{id}
+    </select>
+    <!-- 已入库数据追回 记录操作日志【批次操作日志表 CARD_BATCH_LOG】-->
+    <insert id="insertCardBatchLog" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean" >
+        insert into CARD_BATCH_LOG t (t.id,t.batch_id,t.userid,t.bus_type,t.BATCH_BINBOX_ID,t.create_time)
+        values (seq_card_batch_log.nextval,#{batchId},#{userid},'04',#{id},sysdate)
+    </insert>
+
+    <!-- 入库管理、已入库数据查询 筛选条件 -->
+    <select id="storageCondition" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.StorageBean"
+            resultType="String">
+        <if test="method == '00'">
+            <if test="bin == null or bin == ''">
+                select distinct(b.bin) from CARD_BATCH_BINBOX b,CARD_BATCH c where b.status in('00','01')
+                and b.batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+                and c.id=b.batch_id and c.bank=#{bank}
+                and (qy in
+                <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                    #{qy}
+                </foreach>
+                or qy='220200' or qy='220000')
+                order by to_number(b.bin)
+            </if>
+            <if test="bin != null and bin != ''">
+                select distinct(b.box) from CARD_BATCH_BINBOX b,CARD_BATCH c where b.status in('00','01')
+                and b.batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+                and b.bin=#{bin}
+                and c.id=b.batch_id and c.bank=#{bank}
+                and (qy in
+                <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                    #{qy}
+                </foreach>
+                or qy='220200' or qy='220000')
+                order by to_number(b.box)
+            </if>
+        </if>
+        <if test="method == '01'">
+            <if test="bin == null or bin == ''">
+                select distinct(b.bin) from CARD_BATCH_BINBOX b,CARD_BATCH c where b.status=#{method}
+                and b.batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+                and c.id=b.batch_id and c.bank=#{bank}
+                <!--and (qy in-->
+                <!--<foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">-->
+                    <!--#{qy}-->
+                <!--</foreach>-->
+                <!--or qy='220200' or qy='220000')-->
+                order by to_number(b.bin)
+            </if>
+            <if test="bin != null and bin != ''">
+                select distinct(b.box) from CARD_BATCH_BINBOX b,CARD_BATCH c where b.status=#{method}
+                and b.batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+                and b.bin=#{bin}
+                and c.id=b.batch_id and c.bank=#{bank}
+                <!--and (qy in-->
+                <!--<foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">-->
+                    <!--#{qy}-->
+                <!--</foreach>-->
+                <!--or qy='220200' or qy='220000')-->
+                order by to_number(b.box)
+            </if>
+        </if>
+        <if test="method == '02'">
+            <if test="bin == null or bin == ''">
+                select distinct(b.bin) from CARD_BATCH_BINBOX b,CARD_BATCH c where b.status='01'
+                and b.batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+                and c.id=b.batch_id and c.bank=#{bank} and b.rkwd=#{fkwd}
+                and (qy in
+                <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                    #{qy}
+                </foreach>
+                or qy='220200' or qy='220000')
+                order by to_number(b.bin)
+            </if>
+            <if test="bin != null and bin != ''">
+                select distinct(b.box) from CARD_BATCH_BINBOX b,CARD_BATCH c where b.status='01'
+                and b.batch_id=(select id from CARD_BATCH where batch_no=#{batchNo})
+                and b.bin=#{bin}
+                and c.id=b.batch_id and c.bank=#{bank} and b.rkwd=#{fkwd}
+                and (qy in
+                <foreach  item="qy" collection="qy" index="index"  open="(" separator="," close=")">
+                    #{qy}
+                </foreach>
+                or qy='220200' or qy='220000')
+                order by to_number(b.box)
+            </if>
+        </if>
+
+    </select>
+</mapper>
