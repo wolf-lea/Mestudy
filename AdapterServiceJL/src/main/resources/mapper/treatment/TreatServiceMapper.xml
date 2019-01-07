@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.treatment.service.impl.TreatServiceImpl">
+    <!--待遇资格认证-个人基本信息-->
+	<select id="getTreatPersonInfo" parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.TreatPersonBean"
+		resultType="com.tecsun.sisp.adapter.modules.treatment.entity.response.TreatPersonVO">
+		SELECT p.xm,p.sfzh,p.sex,p.nation,p.sbkh,p.person_id as personId,t.address,t.phone,t.company,t.treat_id as treatId
+        FROM T_YTH_BASIC_PERSON_INFO p
+        LEFT JOIN T_YTH_TREAT_INFO t
+		on p.person_id=t.person_id
+        where 1=1
+        <if test="sfzh != null and sfzh != ''">
+            AND p.sfzh = #{sfzh}
+        </if>
+        <if test="xm != null and xm != ''">
+            AND p.xm = #{xm}
+        </if>
+        <if test="sex != null and sex != ''">
+            AND p.sex = #{sex}
+        </if>
+        order by p.person_id desc
+    </select>
+
+
+    <!--待遇资格认证-是否存在个人基本信息表和待遇资格认证信息表-->
+    <select id="isPersonTreat" parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.treatment.entity.request.TreatPersonBean">
+        SELECT p.PERSON_ID,t.TREAT_ID
+        FROM T_YTH_BASIC_PERSON_INFO p
+        LEFT JOIN T_YTH_TREAT_INFO t
+        ON p.person_id=t.person_id where  p.sfzh = #{sfzh}
+        <if test="xm != null and xm != ''">
+            AND p.xm = #{xm}
+        </if>
+    </select>
+
+
+    <!--待遇资格认证-存入待遇资格认证信息表-->
+    <insert id="insertTreatInfo"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.TreatPersonBean">
+        <selectKey resultType="long" keyProperty="treatId" order="BEFORE">
+            select T_YTH_TREAT_INFO_TREAT_ID_SEQ.nextVal as treatId from dual
+        </selectKey>
+        insert into T_YTH_TREAT_INFO
+        (TREAT_ID,PERSON_ID,ADDRESS,PHONE,COMPANY,CREATE_TIME)
+        values(#{treatId},#{personId},#{address},#{phone},#{company},sysdate)
+    </insert>
+
+    <!--待遇资格认证-更改待遇资格认证信息表-->
+    <update id="updateTreatInfo"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.TreatPersonBean">
+        update T_YTH_TREAT_INFO set UPDATE_TIME=sysdate
+        <if test="company !=null and company !=''">,COMPANY=#{company}</if>
+        <if test="phone !=null and phone !=''">,PHONE=#{phone}</if>
+        <if test="address !=null and address !=''">,ADDRESS=#{address}</if>
+        where TREAT_ID=#{treatId}
+    </update>
+
+
+    <!--待遇资格认证-存入采集表-->
+    <insert id="insertCollect"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.CollectBean">
+        <selectKey resultType="long" keyProperty="colId" order="BEFORE">
+            select T_YTH_COLLECT_COL_ID_SEQ.nextVal as colId from dual
+        </selectKey>
+        insert into T_YTH_COLLECT
+        (COL_ID,PERSON_ID,COL_TYPE,COL_DATA,COL_BASE64,DEVICE_CHANNEL,EQUIPMENT_NO,COL_ADDRESS,
+        COL_TIME,COL_RESULT,FAIL_REASON,COL_HAND,COL_BUS,CREATE_TIME
+        )
+        values(#{colId},#{personId},#{colType},#{colData},#{colBase64},#{colChannel},#{deviceid},#{colAddress},
+        to_date( #{colTime},'yyyy-mm-dd hh24:mi:ss'),#{colResult},#{failReason},#{colHand},#{colBus},sysdate)
+    </insert>
+
+    <!--待遇资格认证-存入认证表-->
+    <insert id="insertVerify"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.VerifyBean">
+        <selectKey resultType="long" keyProperty="verifyId" order="BEFORE">
+            select T_YTH_VERIFY_VERIFY_ID_SEQ.nextVal as verifyId from dual
+        </selectKey>
+        insert into T_YTH_VERIFY
+        (VERIFY_ID,VERIFY_RESULT,CREATE_TIME)
+        values(#{verifyId},#{verifyResult},sysdate)
+    </insert>
+
+    <!--更改认证表-->
+    <update id="updateVerify"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.VerifyBean">
+        update T_YTH_VERIFY set UPDATE_TIME=sysdate
+        <if test="failReason !=null and failReason !=''">,FAIL_REASON=#{failReason}</if>
+        <if test="verifyResult !=null and verifyResult !=''">,VERIFY_RESULT=#{verifyResult}</if>
+        where VERIFY_ID=#{verifyId}
+    </update>
+
+    <!--待遇资格认证-存入认证操作表-->
+    <insert id="insertVerifyOperation"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.VerifyBean">
+        <selectKey resultType="long" keyProperty="operationId" order="BEFORE">
+            select t_yth_verify_operation_id_seq.nextVal as verifyId from dual
+        </selectKey>
+        insert into T_YTH_VERIFY_OPERATION
+        (
+        OPERATION_ID,PERSON_ID,VERIFY_TYPE,VERIFY_DATA,VERIFY_BASE64,COMPARISON_DATA,COMPARISON_BASE64,VERIFY_CHANNEL,EQUIPMENT_NO,VERIFY_ADDRESS,
+        VERIFY_TIME,VERIFY_RESULT,FAIL_REASON,VERIFY_HAND,VERIFY_BUS,INFRARED_DATA,CREATE_TIME)
+        values(#{operationId},#{personId},#{verifyType},#{verifyData},#{verifyBase64},#{comparisonData},#{comparisonBase64},#{verifyChannel},#{deviceid},#{verifyAddress},
+        to_date(#{verifyTime},'yyyy-mm-dd hh24:mi:ss'),#{verifyResult},#{failReason},#{verifyHand},#{verifyBus},#{infraredData},sysdate)
+    </insert>
+
+    <!--待遇资格认证-存入认证操作关联表-->
+    <insert id="insertVerifyAndOpera"
+            parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.VerifyBean">
+        <selectKey resultType="long" keyProperty="verifyoperaId" order="BEFORE">
+            select T_YTH_VERIFY_AND_OPERA_ID_SEQ.nextVal as verifyoperaId from dual
+        </selectKey>
+        insert into T_YTH_VERIFY_AND_OPERA
+        (VERIFYOPERA_ID,VERIFY_ID,OPERATION_ID,CREATE_TIME)
+        values(#{verifyoperaId},#{verifyId},#{operationId},sysdate)
+    </insert>
+
+
+    <!--待遇资格认证-查询是否存在-->
+    <select id="isExistVerify" parameterType="long"
+            resultType="int">
+        select count(0) from T_YTH_VERIFY t where verify_id=#{verifyId}
+    </select>
+
+
+    <!--待遇资格认证-个人认证记录-->
+    <select id="getVerifyRecord" parameterType="com.tecsun.sisp.adapter.modules.treatment.entity.request.VerifyListBean"
+            resultType="com.tecsun.sisp.adapter.modules.treatment.entity.response.VerifyListVO">
+        select * from
+        (select verify_id, z.verifyResult,z.channel,z.verifyTime ,z.failReason, wm_concat( distinct z.verify_type)  as   type
+        from
+        ( select  v.verify_id, v.verify_result as verifyResult,v.FAIL_REASON as failReason,v.update_time as verifyTime,
+        o.verify_channel as channel, o.verify_type
+        from T_YTH_VERIFY v
+        left join  T_YTH_VERIFY_AND_OPERA vo on v.verify_id = vo.verify_id
+        left join  T_YTH_VERIFY_OPERATION o  on vo.operation_id = o.operation_id
+        left join  T_YTH_BASIC_PERSON_INFO b on b.person_id = o.person_id
+        where 1=1 and v.verify_result !='00'
+        <if test="sfzh != null and sfzh != ''">
+            AND b.sfzh = #{sfzh}
+        </if>
+        <if test="xm != null and xm != ''">
+            AND b.xm = #{xm}
+        </if>
+        <if test="verifyResult != null and verifyResult != ''">
+            AND v.verify_result = #{verifyResult}
+        </if>
+        <if test="channel != null and channel != ''">
+            AND o.verify_channel = #{channel}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and v.update_time &gt;=to_date(#{beginTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and v.update_time &lt;=to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        order by o.update_time asc
+        ) z
+        group by (z.verify_id,z.verifyResult,z.channel,z.failReason,z.verifyTime)
+        ) w   where 1=1
+        <if test="type != null and type != ''">
+            AND type like '%${type}%'
+        </if>
+        order by verifyTime desc
+
+  </select>
+</mapper>

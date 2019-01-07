@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--添加调度任务 动态读取config.properties，配置对应的class -->
+
+    <bean id="uploadConfig" class="com.tecsun.sisp.adapter.common.util.Config"/>
+	
+	
+    <!-- 配置调度的具体执行方法 -->
+    <bean id="execution" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="uploadConfig"/>
+        <property name="targetMethod" value="todo"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+
+    <!-- 配置调度执行的触发时间 -->
+    <bean id="exeTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="execution"/>
+        <property name="cronExpression">
+            <value>0 0/1 * * * ?</value>
+        </property>
+    </bean>
+
+    <!-- 调度工厂，唯一，调度任务添加到list中 -->
+    <bean id="scheduler"  class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="exeTrigger"/>
+                <ref bean="trigger1"/>
+                <ref bean="trigger2"/>
+                <ref bean="trigger3"/>
+                <ref bean="trigger4"/>
+                <ref bean="trigger5"/>
+                <ref bean="trigger6"/>
+                <ref bean="trigger7"/>
+                <ref bean="trigger8"/>
+                <ref bean="trigger9"/>
+                <ref bean="trigger10"/>
+                <ref bean="trigger11"/>
+                <ref bean="trigger12"/>
+                <ref bean="trigger13"/>
+                <ref bean="trigger14"/>
+                <ref bean="trigger15"/>
+                <ref bean="trigger16"/>
+                <ref bean="trigger17"/>
+                <ref bean="trigger18"/>
+                <ref bean="trigger19"/>
+            </list>
+        </property>
+    </bean>
+    
+    <!--################################################# 吉林医保监控定时调度任务start #################################################-->
+    
+    
+    <!-- 今日情况（本地药店情况统计数据写入redis定时任务） -->
+	<bean id="todayLocalPharmacySituation" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.TodayLocalPharmacySituationSchedule"/>
+    
+    <bean id="task1" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="todayLocalPharmacySituation"/>
+        <property name="targetMethod" value="saveTodayLocalPharmacySituationData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+    
+    <bean id="trigger1" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task1"/>
+        <property name="cronExpression">
+            <value>0 0 0 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 今日情况（异地药店情况统计数据写入redis定时任务） -->
+    <bean id="todayOffsitePharmacySituation" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.TodayOffsitePharmacySituationSchedule"/>
+    
+    <bean id="task2" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="todayOffsitePharmacySituation"/>
+        <property name="targetMethod" value="saveTodayOffsitePharmacySituationData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task2"/>
+        <property name="cronExpression">
+            <value>0 10 0 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 今日情况（本地医院情况统计数据写入redis定时任务） -->
+    <bean id="todayLocalHospitalSituation" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.TodayLocalHospitalSituationSchedule"/>
+    
+    <bean id="task3" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="todayLocalHospitalSituation"/>
+        <property name="targetMethod" value="saveTodayLocalHospitalSituationData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+    
+    <bean id="trigger3" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task3"/>
+        <property name="cronExpression">
+            <value>0 20 0 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 今日情况（异地医院情况统计数据写入redis定时任务） -->
+    <bean id="todayOffsiteHospitalSituation" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.TodayOffsiteHospitalSituationSchedule"/>
+    
+    <bean id="task4" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="todayOffsiteHospitalSituation"/>
+        <property name="targetMethod" value="saveTodayOffsiteHospitalSituationData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+    
+    <bean id="trigger4" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task4"/>
+        <property name="cronExpression">
+            <value>0 30 0 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 今日出院人次（本地医院出院人次统计数据写入redis定时任务） -->
+    <bean id="todayDischargeVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.TodayDischargeVisitorsSchedule"/>
+    
+    <bean id="task5" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="todayDischargeVisitors"/>
+        <property name="targetMethod" value="saveTodayDischargeVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger5" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task5"/>
+        <property name="cronExpression">
+            <value>0 40 0 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 今日出院结算费用（本地医院出院结算费用统计数据写入redis定时任务） -->
+    <bean id="todaySettlementFee" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.TodaySettlementFeeSchedule"/>
+    
+    <bean id="task6" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="todaySettlementFee"/>
+        <property name="targetMethod" value="saveTodaySettlementFeeData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+    
+    <bean id="trigger6" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task6"/>
+        <property name="cronExpression">
+            <value>0 50 0 ? * *</value>
+        </property>
+    </bean>
+    
+    
+	<!-- 当年结算排名（当年结算费用排名统计数据写入redis定时任务） -->
+    <bean id="currentYearSettlementRanking" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearSettlementRankingSchedule"/>
+    
+    <bean id="task7" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearSettlementRanking"/>
+        <property name="targetMethod" value="saveCurrentYearSettlementRankingData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger7" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task7"/>
+        <property name="cronExpression">
+            <value>0 00 1 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 当年就医统计（本地就医出院人次统计数据写入redis定时任务） -->
+    <bean id="currentYearLocalDischargeVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearLocalDischargeVisitorsSchedule"/>
+    
+    <bean id="task8" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearLocalDischargeVisitors"/>
+        <property name="targetMethod" value="saveCurrentYearLocalDischargeVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger8" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task8"/>
+        <property name="cronExpression">
+            <value>0 15 1 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 当年就医统计（异地就医出院人次统计数据写入redis定时任务） -->
+    <bean id="currentYearOffsiteDischargeVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearOffsiteDischargeVisitorsSchedule"/>
+    
+    <bean id="task9" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearOffsiteDischargeVisitors"/>
+        <property name="targetMethod" value="saveCurrentYearOffsiteDischargeVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger9" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task9"/>
+        <property name="cronExpression">
+            <value>0 30 1 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 当年就医统计（本地就医结算人次统计数据写入redis定时任务） -->
+    <bean id="currentYearLocalSettlementVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearLocalSettlementVisitorsSchedule"/>
+    
+    <bean id="task10" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearLocalSettlementVisitors"/>
+        <property name="targetMethod" value="saveCurrentYearLocalSettlementVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger10" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task10"/>
+        <property name="cronExpression">
+            <value>0 45 1 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 当年就医统计（异地就医结算人次统计数据写入redis定时任务） -->
+    <bean id="currentYearOffsiteSettlementVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearOffsiteSettlementVisitorsSchedule"/>
+    
+    <bean id="task11" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearOffsiteSettlementVisitors"/>
+        <property name="targetMethod" value="saveCurrentYearOffsiteSettlementVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger11" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task11"/>
+        <property name="cronExpression">
+            <value>0 00 2 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 当年就医统计（本地就医结算费用统计数据写入redis定时任务） -->
+    <bean id="currentYearLocalSettlementFee" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearLocalSettlementFeeSchedule"/>
+    
+    <bean id="task12" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearLocalSettlementFee"/>
+        <property name="targetMethod" value="saveCurrentYearLocalSettlementFeeData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger12" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task12"/>
+        <property name="cronExpression">
+            <value>0 15 2 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 当年就医统计（异地就医结算费用统计数据写入redis定时任务） -->
+    <bean id="currentYearOffsiteSettlementFee" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.CurrentYearOffsiteSettlementFeeSchedule"/>
+    
+    <bean id="task13" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="currentYearOffsiteSettlementFee"/>
+        <property name="targetMethod" value="saveCurrentYearOffsiteSettlementFeeData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger13" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task13"/>
+        <property name="cronExpression">
+            <value>0 30 3 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 近24小时交易信息（本地就医出院人次统计数据写入redis定时任务） -->
+    <bean id="realTimeLocalDischargeVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.RealTimeLocalDischargeVisitorsSchedule"/>
+    
+    <bean id="task14" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="realTimeLocalDischargeVisitors"/>
+        <property name="targetMethod" value="saveRealTimeLocalDischargeVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger14" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task14"/>
+        <property name="cronExpression">
+            <value>0 00 4 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 近24小时交易信息（异地就医出院人次统计数据写入redis定时任务） -->
+    <bean id="realTimeOffsiteDischargeVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.RealTimeOffsiteDischargeVisitorsSchedule"/>
+    
+    <bean id="task15" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="realTimeOffsiteDischargeVisitors"/>
+        <property name="targetMethod" value="saveRealTimeOffsiteDischargeVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger15" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task15"/>
+        <property name="cronExpression">
+            <value>0 15 4 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 近24小时交易信息（本地就医结算人次统计数据写入redis定时任务） -->
+    <bean id="realTimeLocalSettlementVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.RealTimeLocalSettlementVisitorsSchedule"/>
+    
+    <bean id="task16" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="realTimeLocalSettlementVisitors"/>
+        <property name="targetMethod" value="saveRealTimeLocalSettlementVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger16" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task16"/>
+        <property name="cronExpression">
+            <value>0 30 4 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 近24小时交易信息（异地就医结算人次统计数据写入redis定时任务） -->
+    <bean id="realTimeOffsiteSettlementVisitors" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.RealTimeOffsiteSettlementVisitorsSchedule"/>
+    
+    <bean id="task17" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="realTimeOffsiteSettlementVisitors"/>
+        <property name="targetMethod" value="saveRealTimeOffsiteSettlementVisitorsData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger17" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task17"/>
+        <property name="cronExpression">
+            <value>0 45 4 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 近24小时交易信息（本地就医结算费用统计数据写入redis定时任务） -->
+    <bean id="realTimeLocalSettlementFee" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.RealTimeLocalSettlementFeeSchedule"/>
+    
+    <bean id="task18" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="realTimeLocalSettlementFee"/>
+        <property name="targetMethod" value="saveRealTimeLocalSettlementFeeData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger18" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task18"/>
+        <property name="cronExpression">
+            <value>0 00 5 ? * *</value>
+        </property>
+    </bean>
+    
+    
+    <!-- 近24小时交易信息（异地就医结算费用统计数据写入redis定时任务） -->
+    <bean id="realTimeOffsiteSettlementFee" class="com.tecsun.sisp.adapter.modules.monitor.controller.schedule.RealTimeOffsiteSettlementFeeSchedule"/>
+    
+    <bean id="task19" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="realTimeOffsiteSettlementFee"/>
+        <property name="targetMethod" value="saveRealTimeOffsiteSettlementFeeData"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+   
+    <bean id="trigger19" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="task19"/>
+        <property name="cronExpression">
+            <value>0 00 6 ? * *</value>
+        </property>
+    </bean>
+        
+    <!--################################################# 吉林医保监控定时调度任务  end  #################################################-->
+
+
+<!--
+
+    &lt;!&ndash; 添加调度任务 上传本地个人申领数据至第三方，配置对应的class &ndash;&gt;
+    <bean id="UploadApplyCard" class="com.tecsun.sisp.adapter.modules.card.controller.schedule.UploadScedule"/>
+
+    &lt;!&ndash; 配置调度的具体执行方法 &ndash;&gt;
+    <bean id="execution2" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="UploadApplyCard"/>
+        <property name="targetMethod" value="upload"/>
+        <property name="concurrent" value="true"/>
+    </bean>
+
+    &lt;!&ndash; 配置调度执行的触发时间 &ndash;&gt;
+    <bean id="exeTrigger2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="execution2"/>
+        <property name="cronExpression">
+            <value>0 0 */2 * * ?</value>
+        </property>
+    </bean>
+
+    &lt;!&ndash; 调度工厂，唯一，调度任务添加到list中 &ndash;&gt;
+    <bean id="scheduler2"  class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="exeTrigger2"/>
+            </list>
+        </property>
+    </bean>
+-->
+
+</beans>

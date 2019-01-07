@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.log.LogInfoServiceImpl">
+
+    <insert id="addLog" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.log.LogInfoVO">
+    	<selectKey keyProperty="logid" resultType="java.lang.Integer" order="BEFORE">
+            select seq_card_logs.nextval from dual
+        </selectKey>
+       insert into CARD_LOGS (LOGID, CIID, LOGINID, CONTENT, TIME, NAME,cardid)
+		values (#{logid}, #{ciid}, #{loginid}, #{content}, sysdate, #{name},#{cardid})
+    </insert>
+    <select id="queryLogs" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.log.LogInfoResultVO" 
+    resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.log.LogInfoResultVO">
+    	select i.name, i.idcard,i.cardid,t.name cname,t.content,t.time
+        from CARD_LOGS t,card_info i
+        where i.id=t.ciid and i.idcard=#{idcard}
+        union all
+        select d.name,d.idcard,d.cardid,u.name cname,(select name from sisp_public.t_dictionary n where n.groupid='BATCH_BUS_TYPE' and n.code=l.bus_type)as content,l.create_time as time
+        from card_batch_log l,card_batch_detail d,sisp_public.t_user u
+        where l.batch_binbox_id=d.batch_binbox_id and l.userid=u.user_id and d.idcard=#{idcard}
+        order by time asc
+    </select>
+    <!--
+        select i.name, i.idcard,i.cardid,t.name cname,t.content,t.time from CARD_LOGS t,card_info i
+    	where i.id=t.ciid and i.idcard=#{idcard} order by t.time desc
+    -->
+
+    <!--插入批次操作日志表-->
+    <insert id="addBatchLog" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.log.BatchLogVO">
+        insert into CARD_BATCH_LOG(ID,BATCH_ID,USERID,BUS_TYPE,BATCH_BINBOX_ID,CREATE_TIME)
+        values (SEQ_CARD_BATCH_LOG.nextval,#{batchId},#{userId},#{busType},#{batchBinBoxId},sysdate)
+    </insert>
+
+</mapper>

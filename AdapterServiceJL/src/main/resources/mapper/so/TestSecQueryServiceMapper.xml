@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.so.service.impl.TestSecQueryServiceImpl">
+	
+	<!-- 个人基本信息 -->
+	<select id="getBasicInsuredInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.InsuranceVO">
+		select 姓名  as xm,性别 as sex,民族 as nation,身份证号 as sfzh,人员状态 as personStatus,
+		社保卡号 as sbkh,单位名称 as companyName,to_char(参加工作日期,'yyyy-mm-dd') as workDate from 个人基本信息  where 身份证号= #{sfzh}
+		and 参保状态='正常参保'
+		<if test="xm != null and xm != ''">
+			AND 姓名 = #{xm}
+		</if>
+	</select>
+
+	<select id="getIncureTypeList" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.IncureTypeVO">
+		select a.险种  as cbxz ,a.参保状态 as cbzt,a.开始年月  as ksny,a.终止年月 as zzny,b.单位名称  as dwmc,a.经办日期  as jbrq
+          from 个人基本信息 b,个人参保信息 a  where a.个人编号=b.个人编号  and b.身份证号=#{sfzh} 
+            and a.参保状态 ='正常参保' order by a.经办日期 desc 
+	</select>
+
+	<!-- 查询人员参保信息 -->
+	<select id="getUserCBInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.so.entity.response.UserCBInfoVO">
+		SELECT t.cbzt,t.cbxz,t.title,t.url FROM TEST_USER_CB_INFO t
+		<!--WHERE t.sfzh = #{sfzh}-->
+		<!--<if test="xm != null and xm != ''">-->
+			<!--AND t.xm = #{xm}-->
+		<!--</if>-->
+		order by t.seq asc
+	</select>
+	
+	<!-- 医疗保险(MI)缴费 -->
+	<select id="getMIPaymentBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.FiveInsuranceVO">
+	   select sum(个人缴纳) as grjnhj,sum(单位缴纳) as dwjnhj,sum(个人缴纳)+sum(单位缴纳) as jnze  from (
+				select 
+				max(b.险种类型) 险种类型,max(b.款项) 款项,
+				max(a.统筹区) as 统筹区,b.款费所属期,
+				max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+				max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+				max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+				max(b.缴费标志) as 缴费标志
+				from 个人基本信息 a,个人缴费信息  b
+				where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+				and b.险种类型='基本医疗保险'
+				and a.身份证号=#{sfzh}
+				group by b.款费所属期 
+				  union all  
+				select
+				max(b.险种类型) 险种类型,max(b.款项) 款项,
+				max(a.统筹区) as 统筹区,b.款费所属期,
+				max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+				max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+				max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+				max(b.缴费标志) as 缴费标志
+				from 个人基本信息 a,个人缴费信息  b
+				where a.个人编号=b.个人编号 and a.参保状态='正常参保'
+				and b.险种类型 ='大额医疗保险'
+				and a.身份证号=#{sfzh}
+				group by b.款费所属期
+				 union all  
+				select
+				max(b.险种类型) 险种类型,max(b.款项) 款项,
+				max(a.统筹区) as 统筹区,b.款费所属期,
+				max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+				max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+				max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+				max(b.缴费标志) as 缴费标志
+				from 个人基本信息 a,个人缴费信息  b
+				where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+				and b.险种类型 ='公务员补助'
+				and a.身份证号=#{sfzh}
+				group by b.款费所属期
+				  
+				) c 
+				
+				order by c.款费所属期 desc 
+	</select>
+
+	<select id="getMIPaymentRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.MIRecordVO">
+			select c.险种类型 as xz, c.款项 as kx,c.统筹区 as tcq,c.款费所属期 as ssq,c.缴费基数 as jfjs,
+            c.个人缴纳 as grjn,c.单位缴纳 as dwjn,c.缴费标志 as jfbz,c.个人缴纳+c.单位缴纳 as jnze from (
+			select 
+			max(b.险种类型) 险种类型,max(b.款项) 款项,
+			max(a.统筹区) as 统筹区,b.款费所属期,
+			max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+			max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+			max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+			max(b.缴费标志) as 缴费标志
+			from 个人基本信息 a,个人缴费信息  b
+			where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+			and b.险种类型='基本医疗保险'
+			and a.身份证号=#{sfzh}
+			group by b.款费所属期 
+			  union all  
+			select
+			max(b.险种类型) 险种类型,max(b.款项) 款项,
+			max(a.统筹区) as 统筹区,b.款费所属期,
+			max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+			max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+			max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+			max(b.缴费标志) as 缴费标志
+			from 个人基本信息 a,个人缴费信息  b
+			where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+			and b.险种类型 ='大额医疗保险'
+			and a.身份证号=#{sfzh}
+			group by b.款费所属期
+			union all  
+			select
+			max(b.险种类型) 险种类型,max(b.款项) 款项,
+			max(a.统筹区) as 统筹区,b.款费所属期,
+			max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+			max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+			max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+			max(b.缴费标志) as 缴费标志
+			from 个人基本信息 a,个人缴费信息  b
+			where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+			and b.险种类型 ='公务员补助'
+			and a.身份证号=#{sfzh}
+			group by b.款费所属期
+			) c 
+			where 1=1
+			<if test="ksny != null and ksny != ''">
+			 AND to_date(c.款费所属期,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+			 </if>
+			 <if test="jsny != null and jsny != ''">
+			 AND to_date(c.款费所属期,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+			</if>
+			order by c.款费所属期 desc 
+		
+	</select>
+	
+	<!-- 医疗保险账户（MA）明细 -->
+	<select id="getMABasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.MAIncureVO">
+		select b.账户余额  as grybzhye from 个人基本信息 a,个人账户信息 b where a.个人编号=b.个人编号  and a.参保状态='正常参保' and a.身份证号=#{sfzh}
+	</select>
+
+	<select id="getMADetail" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.MARecordVO">
+		select a.姓名 as xm,b.结算日期  as jsrq,b.服务机构名称 as fwjgmc,b.医疗类别 as yllb,b.费用总额 as fyze,
+		b.账户支付 as zhzf,b.统筹支付  as tczf,b.现金支付 as xjzf,b.公务员补助 as gwybz,
+		b.保健对象支付 as bjdxzf,b.离休统筹支付 as lxtczf,b.定点医疗机构负担 as ddyljgfd,b.大额保险支付 as debxzf,b.单据号 as djh from 个人基本信息 a,个人医疗结算信息 b 
+         where  a.个人编号=b.个人编号 and a.参保状态='正常参保'
+        and a.身份证号=#{sfzh}
+        <if test="ksny != null and ksny != ''">
+        AND to_date(to_char(b.结算日期,'YYYY-MM'),'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+        </if>
+        <if test="jsny != null and jsny != ''">
+        AND to_date(to_char(b.结算日期,'YYYY-MM'),'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+        </if>
+        order by b.结算日期 desc
+		
+	</select>
+	<!-- 个人医疗费用信息-->
+	<select id="getMACost" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.MACostVO">
+		select a.姓名 as xm, b.结算日期 as jyrq,b.收费类别 as sflx,b.医院项目名称 as ypmc ,b.剂型 as jx,
+         b.处方日期 as cfrq,b.单价 as dj,b.数量 as sl,b.金额 as je from 个人基本信息 a,个人医疗费用信息 b 
+         where  a.个人编号=b.个人编号  and a.参保状态='正常参保'
+        and a.身份证号=#{sfzh}
+        <if test="ksny != null and ksny != ''">
+        AND to_date(to_char(b.结算日期,'YYYY-MM'),'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+        </if>
+        <if test="jsny != null and jsny != ''">
+        AND to_date(to_char(b.结算日期,'YYYY-MM'),'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+        </if>
+        order by b.结算日期 desc
+		
+	</select>
+	
+	<!-- 养老保险(EI)缴费 -->
+	<select id="getEIPaymentBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.FiveInsuranceVO">
+		SELECT t.xm,t.sfzh,t.cbzt,t.jnze,t.dwjnhj,t.grjnhj FROM TEST_EI_PAYMENT_BASIC_INFO t
+		WHERE t.sfzh = #{sfzh}
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+	</select>
+
+	<select id="getEIPaymentRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.EIPayRecordVO">
+		SELECT t.ssq,t.xz,t.jfjs,t.dwjn,t.grjn,t.jnze FROM TEST_EI_PAYMENT_RECORD t  
+		WHERE  t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+		<if test="ksny != null and ksny != ''">
+			AND to_date(t.ssq,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+		</if>
+		<if test="jsny != null and jsny != ''">
+			AND to_date(t.ssq,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+		</if>
+		ORDER BY to_date(t.ssq,'YYYY-MM') DESC
+	</select>
+	
+	<!-- 养老保险待遇发放 -->
+	<select id="getEIIssueBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.EIIssueBasicVO">
+		SELECT t.sfzh,t.xm,t.yljffzje FROM TEST_EI_ISSUE_BASIC_INFO t
+		WHERE t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+	</select>
+
+	<select id="getEIIssueRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.EIIssueRecordVO">
+		SELECT t.ffsj,t.ffyh,t.ffzh,t.ffzje,t.jcylj,t.grzhylj,t.gdxylj,t.bfje,t.tfje FROM TEST_EI_ISSUE_RECORD t  
+		WHERE  t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+		<if test="ksny != null and ksny != ''">
+			AND to_date(t.ffsj,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+		</if>
+		<if test="jsny != null and jsny != ''">
+			AND to_date(t.ffsj,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+		</if>
+		ORDER BY to_date(t.ffsj,'YYYY-MM') DESC
+	</select>
+	
+	<!-- 生育保险(BI)缴费 -->
+	<select id="getBIPaymentBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.FiveInsuranceVO">
+	   select sum(个人缴纳) as grjnhj,sum(单位缴纳) as dwjnhj,sum(个人缴纳)+sum(单位缴纳) as jnze  from (
+				select 
+				max(b.险种类型) 险种类型,max(b.款项) 款项,
+				max(a.统筹区) as 统筹区,b.款费所属期,
+				max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+				max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+				max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+				max(b.缴费标志) as 缴费标志
+				from 个人基本信息 a,个人缴费信息  b
+				where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+				and b.险种类型='生育保险'
+				and a.身份证号=#{sfzh}
+				group by b.款费所属期   
+				) c 
+				
+				order by c.款费所属期 desc
+	</select>			
+
+	<select id="getBIPaymentRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.MIRecordVO">
+			select c.险种类型 as xz, c.款项 as kx,c.统筹区 as tcq,c.款费所属期 as ssq,c.缴费基数 as jfjs,
+            c.个人缴纳 as grjn,c.单位缴纳 as dwjn,c.缴费标志 as jfbz,c.个人缴纳+c.单位缴纳 as jnze from (
+			select 
+			max(b.险种类型) 险种类型,max(b.款项) 款项,
+			max(a.统筹区) as 统筹区,b.款费所属期,
+			max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+			max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+			max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+			max(b.缴费标志) as 缴费标志
+			from 个人基本信息 a,个人缴费信息  b
+			where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+			and b.险种类型='生育保险'
+			and a.身份证号=#{sfzh}
+			group by b.款费所属期 
+            ) c 
+			where 1=1
+			<if test="ksny != null and ksny != ''">
+			 AND to_date(c.款费所属期,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+			 </if>
+			 <if test="jsny != null and jsny != ''">
+			 AND to_date(c.款费所属期,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+			</if>
+			order by c.款费所属期 desc 
+		
+	</select>
+	
+	<!--工伤保险(EII)缴费 -->
+	<select id="getEIIPaymentBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.FiveInsuranceVO">
+	   select sum(个人缴纳) as grjnhj,sum(单位缴纳) as dwjnhj,sum(个人缴纳)+sum(单位缴纳) as jnze  from (
+				select 
+				max(b.险种类型) 险种类型,max(b.款项) 款项,
+				max(a.统筹区) as 统筹区,b.款费所属期,
+				max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+				max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+				max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+				max(b.缴费标志) as 缴费标志
+				from 个人基本信息 a,个人缴费信息  b
+				where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+				and b.险种类型='工伤保险'
+				and a.身份证号=#{sfzh}
+				group by b.款费所属期   
+				) c 
+				
+				order by c.款费所属期 desc 
+	</select>
+
+	<select id="getEIIPaymentRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.MIRecordVO">
+			select c.险种类型 as xz, c.款项 as kx,c.统筹区 as tcq,c.款费所属期 as ssq,c.缴费基数 as jfjs,
+            c.个人缴纳 as grjn,c.单位缴纳 as dwjn,c.缴费标志 as jfbz,c.个人缴纳+c.单位缴纳 as jnze from (
+			select 
+			max(b.险种类型) 险种类型,max(b.款项) 款项,
+			max(a.统筹区) as 统筹区,b.款费所属期,
+			max(b.缴费基数)as 缴费基数 ,max(b.缴费金额)as 缴费金额,
+			max(decode(b.款项,'个人缴纳',缴费金额,0.00)) as 个人缴纳 ,
+			max(decode(b.款项,'单位缴纳',缴费金额,0.00)) as 单位缴纳 ,
+			max(b.缴费标志) as 缴费标志
+			from 个人基本信息 a,个人缴费信息  b
+			where a.个人编号=b.个人编号  and a.参保状态='正常参保'
+			and b.险种类型='工伤保险'
+			and a.身份证号=#{sfzh}
+			group by b.款费所属期 
+            ) c 
+			where 1=1
+			<if test="ksny != null and ksny != ''">
+			 AND to_date(c.款费所属期,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+			 </if>
+			 <if test="jsny != null and jsny != ''">
+			 AND to_date(c.款费所属期,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+			</if>
+			order by c.款费所属期 desc 
+		
+	</select>
+	<!-- 工伤医疗结算信息 -->
+	<select id="getEIISettlementInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.EIISettlementVO">
+	  select b.结算日期 as ssq,b.定点机构名称 as ddjgmc,b.医疗费总额 as ylfze,b.账户支付 as zhzf,b.现金支付 as xjzf,b.工伤统筹支付 as gstczf
+         from 个人基本信息 a,工伤医疗结算信息  b where a.个人编号=b.个人编号  and a.参保状态='正常参保' and a.身份证号=#{sfzh}
+			<if test="ksny != null and ksny != ''">
+			 AND b.结算日期  &gt;=to_date(#{ksny},'YYYY-MM')
+			 </if>
+			 <if test="jsny != null and jsny != ''">
+			 AND b.结算日期  &lt;=last_day(to_date(#{jsny},'YYYY-MM'))
+			</if>
+			order by b.结算日期  desc 
+		
+	</select>
+	
+	
+
+	<!--失业保险(UEI)缴纳 -->
+	<select id="getUEIPaymentBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.FiveInsuranceVO">
+		SELECT t.xm,t.sfzh,t.cbzt,t.jnze,t.dwjnhj,t.grjnhj FROM TEST_UEI_PAYMENT_BASIC_INFO t
+		WHERE t.sfzh = #{sfzh}
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+	</select>
+
+	<select id="getUEIPaymentRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.FiveInsuranceRecordVO">
+		SELECT t.ssq,t.jfjs,t.dwjn,t.grjn,t.jnze FROM TEST_UEI_PAYMENT_RECORD t  
+		WHERE  t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+		<if test="ksny != null and ksny != ''">
+			AND to_date(t.ssq,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+		</if>
+		<if test="jsny != null and jsny != ''">
+			AND to_date(t.ssq,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+		</if>
+		ORDER BY to_date(t.ssq,'YYYY-MM') DESC
+	</select>
+	
+	
+	<!--城乡居民养老保险(URREI)缴纳 -->
+	<select id="getURREIPaymentBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.URREIPayBasicVO">
+		SELECT t.sfzh,t.xm,t.cbzt,t.jnze,t.ljjnnx FROM TEST_URREI_PAYMENT_BASIC_INFO t
+		WHERE t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+	</select>
+
+	<select id="getURREIPaymentRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.URREIPayRecord">
+		SELECT t.ssq,t.grjn,t.zfbt,t.qtbz,t.dj FROM TEST_URREI_PAYMENT_RECORD t  
+		WHERE  t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+		ORDER BY to_date(t.ssq,'YYYY') DESC
+	</select>
+	
+	<!--城乡居民养老保险(URREI)待遇发放 -->
+	<select id="getURREIIssueBasicInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.URREIIssueBasicVO">
+		SELECT t.sfzh,t.xm,t.yljffzje FROM TEST_URREI_ISSUE_BASIC_INFO t
+		WHERE t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+	</select>
+
+	<select id="getURREIIssueRecord" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.URREIIssueRecordVO">
+		SELECT t.ffsj,t.ffyh,t.ffzh,t.ffzje,t.jcylj,t.grzhylj,t.bfje,t.tfje FROM TEST_URREI_ISSUE_RECORD t  
+		WHERE  t.sfzh = #{sfzh} 
+		<if test="xm != null and xm != ''">
+			AND t.xm= #{xm}
+		</if>
+		<if test="ksny != null and ksny != ''">
+			AND to_date(t.ffsj,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+		</if>
+		<if test="jsny != null and jsny != ''">
+			AND to_date(t.ffsj,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+		</if>
+		ORDER BY to_date(t.ffsj,'YYYY-MM') DESC
+	</select>
+
+    <!--医保账户余额查询-->
+    <select id="getBalanceOfMIAccount" parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.so.entity.response.BlanceOfMIAccountVO">
+        SELECT t.sfzh,t.xm,t.poolAccount,t.individualAccount FROM TEST_BALANCE_OF_MIACCOUNT t
+        WHERE t.sfzh = #{sfzh}
+        <if test="xm != null and xm != ''">
+            AND t.xm= #{xm}
+        </if>
+    </select>
+    
+       <!--生育待遇发放信息-->
+    <select id="getBITreatmentInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.so.entity.response.BITreatmentVO">
+      select t.个人编号 as grbh,t.单位编号 as dwbh,t.结算期 as jsq,t.生育发生时间 as syfssj,
+      t.生育待遇类别 as sydylb,t.待遇金额 as dyje,t.待遇支付状态 as dyzfzt,t.经办日期 as jbrq 
+      from 生育待遇发放信息 t, 个人基本信息 g where t.个人编号=g.个人编号  and g.参保状态='正常参保' and g.身份证号=#{sfzh} 
+      <if test="ksny != null and ksny != ''">
+			 AND to_date(t.结算期,'YYYY-MM') &gt;=to_date(#{ksny},'YYYY-MM')
+	  </if>
+	  <if test="jsny != null and jsny != ''">
+			 AND to_date(t.结算期,'YYYY-MM') &lt;=to_date(#{jsny},'YYYY-MM')
+	  </if>
+      order by t.经办日期 desc       
+    </select>
+    
+      <!--生育医疗结算信息-->
+    <select id="getBISettlementInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.so.entity.response.BISettlementVO">
+       select t.个人编号 as grbh,t.人员类别 as rylb,t.定点机构名称 as ddjgmc,t.医疗类别 as yllb,
+       t.结算日期 as jsrq,t.医疗费总额 as ylfze,t.账户支付 as zhzf,t.现金支付 as xjzf,t.生育统筹支付 as sytczf
+       from 生育医疗结算信息 t, 个人基本信息 g where t.个人编号=g.个人编号   and g.参保状态='正常参保'and g.身份证号=#{sfzh}
+       <if test="ksny != null and ksny != ''">
+			 AND t.结算日期  &gt;=to_date(#{ksny},'YYYY-MM')
+	  </if>
+	  <if test="jsny != null and jsny != ''">
+			 AND t.结算日期  &lt;=last_day(to_date(#{jsny},'YYYY-MM'))
+	  </if>
+       order by t.结算日期 desc    
+    </select>
+    
+      <!--城镇居民缴费信息-->
+    <select id="getTRPaymentInfo" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.so.entity.response.TRPaymentVO">
+      select b.家庭编号 as jtbh,b.险种类型 as xzlx,b.款项 as kx,b.款费所属期 as ssq,b.缴费类型 as jflx,b.缴费金额 as sjje,b.实缴费日期 as sjrq
+         from 个人基本信息 a,居民缴费信息  b where a.个人编号=b.个人编号  and a.参保状态='正常参保' and a.身份证号=#{sfzh} and b.缴费类型='城镇居民缴费'
+       <if test="ksny != null and ksny != ''">
+			 AND last_day(add_months(trunc(to_date(substr(b.款费所属期,0,4),'yyyy'),'y'),11)) &gt;=to_date(#{ksny},'YYYY-MM')
+	  </if>
+	  <if test="jsny != null and jsny != ''">
+			 AND trunc(to_date(substr(b.款费所属期,0,4),'yyyy'),'y') &lt;=last_day(to_date(#{jsny},'YYYY-MM'))
+	  </if>
+        order by b.款费所属期 desc  
+    </select>
+    
+    
+    <!-- 定点医疗机构信息 -->
+    <select id="getDesignatedHospitals" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.HospitalQueryBean"
+    		resultType="com.tecsun.sisp.adapter.modules.so.entity.response.DesignatedHospitalVO">
+    	select hospital.统筹区号  as tcqh, hospital.机构编号 as jgbh, hospital.机构名称  as jgmc, hospital.机构等级  as jgdj, hospital.机构类型  as jglx,
+    	hospital.联系电话  as lxdh, hospital.通讯地址  as txdz from 定点医疗机构信息  hospital where 机构类型 in ('医院','异地') 
+    	<if test="jgmc != null and jgmc != ''">
+    		AND 机构名称  like '%'||#{jgmc}||'%'
+    	</if>
+    </select>
+    
+    <!-- 吉林市三级甲等定点医疗机构 -->
+    <select id="getThirdClassDesignatedHospitals" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.PaymentQueryBean"
+    resultType="com.tecsun.sisp.adapter.modules.so.entity.response.DesignatedHospitalVO">
+    	select hospital.统筹区号  as tcqh, hospital.机构编号 as jgbh, hospital.机构名称  as jgmc, hospital.机构等级  as jgdj, hospital.机构类型  as jglx,
+    	hospital.联系电话  as lxdh, hospital.通讯地址  as txdz from 定点医疗机构信息   hospital where 机构等级='三级甲等' and 统筹区号='吉林市'
+    </select>
+    
+    <!-- 药品目录信息 -->
+	<select id="getDrugCatalogInformations" parameterType="com.tecsun.sisp.adapter.modules.so.entity.request.DrugCatalogQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.so.entity.response.DrugCatalogInformationVO">
+		select drug.药品编码  as ypbm, drug.中文名称  as zwmc, drug.英文名称  as ywmc, drug.收费类别  as sflb, drug.收费等级  as sfdj, drug.拼音码  as pym,
+		drug.剂型  as jx, drug.规格  as gg from 药品目录信息  drug where 1=1
+		<if test="ypbm != null and ypbm != ''">
+			AND 药品编码  like '%'||#{ypbm}||'%'
+		</if>
+		<if test="zwmc != null and zwmc != ''">
+			AND 中文名称  like '%'||#{zwmc}||'%'
+		</if>  
+	</select>
+	
+</mapper>

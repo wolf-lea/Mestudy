@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.iface.server.model.dao_dr.YldyDao">
+
+    <select id="getAAC001" resultType="java.lang.String">
+    	 select 
+              aac001 
+          from hbsimis_xgjb.ac02 f
+          where aac001 in (
+                select AAC001
+                  from hbsimis_xgjb.ac01 a
+                 where a.aac002 = #{idcard}
+                   and a.aac031 != '3'
+          )
+          
+          and 
+          f.AAE140 = '11'
+    </select>
+    
+</mapper>

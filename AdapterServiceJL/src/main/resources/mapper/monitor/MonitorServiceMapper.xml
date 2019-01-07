@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.monitor.service.impl.MonitorServiceImpl">
+
+	<!-- 当年就医统计（本地就医出院人次统计） -->
+	<select id="getCurrentYearLocalDischargeVisitors" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.MedicalStatisticsQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearDischargeVisitorsVO">
+		SELECT
+			to_char(出院日期, 'yyyy/MM') AS currentMonth,
+			count(出院日期) AS discharge
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			to_char(出院日期, 'yyyy') = #{currentYear}
+		AND 
+			instr(医疗类别, '住院') > 0 
+		AND 
+			instr(定点编号, 'H') = 1 
+		GROUP BY
+			to_char(出院日期, 'yyyy/MM')
+		ORDER BY
+			to_char(出院日期, 'yyyy/MM')
+	</select>
+	
+	
+	<!-- 当年就医统计（异地就医出院人次统计） -->
+	<select id="getCurrentYearOffsiteDischargeVisitors" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.MedicalStatisticsQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearDischargeVisitorsVO">
+		SELECT
+			to_char(出院日期, 'yyyy/MM') AS currentMonth,
+			count(出院日期) AS discharge
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			to_char(出院日期, 'yyyy') = #{currentYear}
+		AND 
+			instr(医疗类别, '住院') > 0 
+		AND 
+			instr(定点编号, 'H') = 0 
+		GROUP BY
+			to_char(出院日期, 'yyyy/MM')
+		ORDER BY
+			to_char(出院日期, 'yyyy/MM')
+	</select>
+	
+	
+	<!-- 当年就医统计 （本地就医结算人次统计）-->
+	<select id="getCurrentYearLocalSettlementVisitors"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.MedicalStatisticsQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearSettlementVisitorsVO">
+		SELECT
+			to_char(结算日期, 'yyyy/MM') AS currentMonth,
+			count(结算日期) AS settlementNumber
+		FROM
+			个人医疗结算信息
+		WHERE
+			to_char(结算日期, 'yyyy') = #{currentYear}
+		AND 
+			instr(服务机构代码, 'H') = 1 
+		GROUP BY
+			to_char(结算日期, 'yyyy/MM')
+		ORDER BY
+			to_char(结算日期, 'yyyy/MM')
+	</select>
+	
+	
+	<!-- 当年就医统计 （异地就医结算人次统计）-->
+	<select id="getCurrentYearOffsiteSettlementVisitors"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.MedicalStatisticsQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearSettlementVisitorsVO">
+		SELECT
+			to_char(结算日期, 'yyyy/MM') AS currentMonth,
+			count(结算日期) AS settlementNumber
+		FROM
+			个人医疗结算信息
+		WHERE
+			to_char(结算日期, 'yyyy') = #{currentYear}
+		AND 
+			instr(服务机构代码, 'H') = 0
+		GROUP BY
+			to_char(结算日期, 'yyyy/MM')
+		ORDER BY
+			to_char(结算日期, 'yyyy/MM')
+	</select>
+	
+	
+	<!-- 当年就医统计 （本地就医结算费用统计）-->
+	<select id="getCurrentYearLocalSttlementFee"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.MedicalStatisticsQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearSettlementFeeVO">
+		SELECT
+			to_char(结算日期, 'yyyy/MM') AS currentMonth,
+			sum(金额) AS settlementFee
+		FROM
+			个人医疗费用信息
+		WHERE
+			to_char(结算日期, 'yyyy') = #{currentYear}
+		AND 
+			instr(服务机构代码 , 'H') = 1
+		GROUP BY
+			to_char(结算日期, 'yyyy/MM')
+		ORDER BY
+			to_char(结算日期, 'yyyy/MM')
+	</select>
+	
+	
+	<!-- 当年就医统计 （异地就医结算费用统计）-->
+	<select id="getCurrentYearOffsiteSttlementFee"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.MedicalStatisticsQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearSettlementFeeVO">
+		SELECT
+			to_char(结算日期, 'yyyy/MM') AS currentMonth,
+			sum(金额) AS settlementFee
+		FROM
+			个人医疗费用信息
+		WHERE
+			to_char(结算日期, 'yyyy') = #{currentYear}
+		AND 
+			instr(服务机构代码 , 'H') = 0
+		GROUP BY
+			to_char(结算日期, 'yyyy/MM')
+		ORDER BY
+			to_char(结算日期, 'yyyy/MM')
+	</select>
+
+
+	<!-- 今日情况（统计本地药店今日人次和消费） -->
+	<select id="getTodayLocalPharmacySituation"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.PharmacyQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.PharmacySituationVO">
+		SELECT
+			count(出院日期) AS purchaseOfMedicines,
+			sum(总费用) AS consumption
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			to_char(出院日期, 'yyyy/MM/dd') = #{currentDate}
+		AND 
+			医疗类别  = '药店购药'
+		AND 
+			instr(定点编号, 'H') = 1
+	</select>
+	
+	
+	<!-- 今日情况（统计异地药店今日人次和消费） -->
+	<select id="getTodayOffsitePharmacySituation"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.PharmacyQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.PharmacySituationVO">
+		SELECT
+			count(出院日期) AS purchaseOfMedicines,
+			sum(总费用) AS consumption
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			to_char(出院日期, 'yyyy/MM/dd') = #{currentDate}
+		AND 
+			医疗类别  = '药店购药'
+		AND 
+			instr(定点编号, 'H') = 0
+	</select>
+	
+	
+	<!-- 今日情况（统计本地医院今日出院人次和消费 ） -->
+	<select id="getTodayLocalHospitalSituation"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.HospitalSituationVO">
+		SELECT
+			count(出院日期) AS dischargeNum,
+			sum(总费用) AS consumption
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			to_char(出院日期, 'yyyy/MM/dd') = #{currentDate}
+		AND 
+			instr(医疗类别, '住院') > 0
+		AND 
+			instr(定点编号, 'H') = 1
+	</select>
+	
+	
+	<!-- 今日情况（统计异地医院今日出院人次和消费 ） -->
+	<select id="getTodayOffsiteHospitalSituation"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.HospitalSituationVO">
+		SELECT
+			count(出院日期) AS numberOfAdmission,
+			sum(总费用) AS consumption
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			to_char(出院日期, 'yyyy/MM/dd') = #{currentDate}
+		AND 
+			instr(医疗类别, '住院') > 0
+		AND 
+			instr(定点编号, 'H') = 0
+	</select>
+	
+	
+	<!-- 今日出院人次（只统计本地） -->
+	<select id="getTodayDischargeVisitors"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.TodayDischargeVisitorsVO">
+		SELECT * FROM (
+			SELECT
+				定点名称   AS hospitalName,
+				count(出院日期) AS dischargeNum
+			FROM
+				个人医疗登记结算信息
+			WHERE
+				to_char(出院日期, 'yyyy/MM/dd') = #{currentDate}
+			AND 
+				instr(医疗类别, '住院') > 0
+			AND 
+				instr(定点编号, 'H') = 1
+			GROUP BY 
+				定点名称
+		) ORDER BY dischargeNum DESC
+	</select>
+	
+	
+	<!-- 今日出院结算费用（只统计本地） -->
+	<select id="getTodaySettlementFee"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.TodaySettlementFeeVO">
+		SELECT * FROM (
+			SELECT
+				定点名称 AS hospitalName,
+				sum(总费用) AS settlementFee
+			FROM
+				个人医疗登记结算信息
+			WHERE
+				to_char(出院日期, 'yyyy/MM/dd') = #{currentDate}
+			AND 
+				instr(医疗类别, '住院') > 0
+			AND 
+				instr(定点编号, 'H') = 1
+			GROUP BY 
+				定点名称
+		) ORDER BY settlementFee DESC
+	</select>
+	
+	
+	<!-- 当年结算排名 -->
+	<select id="getCurrentYearSettlementRanking"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RankingQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.CurrentYearSettlementRankingVO">
+		SELECT
+			concat(substr(服务机构代码, 0, 2), '00') AS cityName,
+			sum(费用总额) AS settlementAmount
+		FROM
+			(SELECT * FROM 个人医疗结算信息   WHERE instr(服务机构代码, 'H') = 0  AND to_char(结算日期, 'yyyy') = #{currentYear} ) 
+		GROUP BY
+			concat(substr(服务机构代码, 0, 2), '00')
+		ORDER BY
+			settlementAmount DESC
+	</select>
+	
+	
+	<!-- 查询当前时间产生结算信息记录的个人编号、住院号、服务机构代码 -->
+	<select id="getCurrentPersonalNo"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalRealTimeSettlementQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.PersonalSettlementVO">
+		SELECT
+			住院号  AS hospitalNo,
+			个人编号  AS personalNo,
+			服务机构代码  AS fixedInstitutionNo
+		FROM
+			个人医疗结算信息
+		WHERE
+			结算日期  = to_date(#{currentTime}, 'yyyy/MM/dd HH24:mi:ss')
+		AND 
+			instr(医疗类别, '住院') > 0
+		<if test="areaFlag != null and areaFlag eq 'local'">
+			AND instr(服务机构代码, 'H') = 1
+		</if>
+		<if test="areaFlag != null and areaFlag eq 'offSite'">
+			AND instr(服务机构代码, 'H') = 0 
+		</if>
+	</select>
+	
+	
+	<!-- 医院实时结算情况（个人参保信息） -->
+	<select id="getPersonalInsuranceInfo"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalRealTimeSettlementQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.PersonalInfoVO">
+		SELECT
+			wm_concat(c.险种) AS insurance
+		FROM
+			 个人参保信息  c
+  		WHERE
+  			c.个人编号 = #{personalNo}	
+	</select>
+	
+	
+	<!-- 医院实时结算情况 （个人信息）-->
+	<select id="getPersonalInfo"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalRealTimeSettlementQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.PersonalInfoVO">
+		SELECT
+			j.姓名  AS name,
+			j.身份证号  AS socialNumber,
+			j.统筹区  AS insuredCity,
+			y.机构名称  AS medicalTreatmentCity,
+			count(d.出院日期)  AS totalSettlement,
+			d.住院天数  AS totalHospitalization,
+			sum(d.总费用)  AS totalSettlementFee,
+			sum(d.总费用 - d.自费) AS totalFundPaymentFee
+		FROM
+ 			 个人基本信息  j,
+  			个人医疗登记结算信息  d,
+  			定点医疗机构信息 y
+  		WHERE
+  			d.个人编号 = j.个人编号
+		AND 
+			d.就诊流水号 = #{hospitalNo} 
+		AND 
+			d.个人编号 = #{personalNo}
+		AND 
+			y.机构编号 = #{fixedInstitutionNo}
+		GROUP BY
+			j.姓名,
+			j.统筹区,
+			j.身份证号,
+			y.机构名称,
+			d.住院天数
+	</select>
+	
+	
+	<!-- 医院实时结算情况 （就医结算）-->
+	<select id="getMedicalSettlementInfo"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalRealTimeSettlementQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.MedicalTreatmentSettlementVO">
+		SELECT 
+			入院日期  AS admissionDate,
+			出院日期  AS dischargeDate,
+			住院天数  AS hospitalDays,
+			出院诊断名称  AS dischargeDiagnosis,
+			总费用  AS totalFee,
+			(总费用 - 自费) AS fundPaymentFee,
+			(自费 + 个人自理) AS personalPayment,
+			进入统筹费用  AS coordinationScope,
+			个人自理  AS personalCost
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			就诊流水号 = #{hospitalNo}
+		AND 
+			个人编号 = #{personalNo}
+	</select>
+	
+	
+	<!-- 医院实时结算情况 （基金支付）-->
+	<select id="getFundPaymentInfo"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalRealTimeSettlementQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.FundPaymentVO">
+		SELECT 
+			账户  AS personalAccount,
+			公务员  AS civilServiceSubsidy
+		FROM
+			个人医疗登记结算信息
+		WHERE
+			就诊流水号 = #{hospitalNo}
+		AND 
+			个人编号 = #{personalNo}
+	</select>
+	
+	
+	<!-- 医院实时结算请情况（费用明细） -->
+	<select id="getMedicalFeeDetailInfo"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.HospitalRealTimeSettlementQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.MedicalFeeDetailVO">
+		SELECT
+      		 医院项目名称  AS hospitalProjectName,
+      		 单价  AS unitPrice,
+      		 数量  AS quantity,
+      		 金额  AS amount
+       	FROM 
+       		个人医疗费用信息
+       	WHERE 
+       		个人编号 = #{personalNo}
+       	AND 
+       		住院号 = #{hospitalNo}
+		<if test="areaFlag != null and areaFlag eq 'local'">
+			AND instr(服务机构代码, 'H') = 1
+		</if>
+		<if test="areaFlag != null and areaFlag eq 'offSite'">
+			AND instr(服务机构代码, 'H') = 0
+		</if>
+	</select>
+	
+	
+	<!-- 医院定点实时结算情况 -->
+	<select id="getRealTimeTransaction"
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.TransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.TransactionVO">
+		SELECT
+			y.结算日期  AS transactionTime,
+			j.姓名  AS insuredPerson,
+			d.机构名称  AS medicalInsitituation
+		FROM
+			个人医疗结算信息 y,
+			个人基本信息 j,
+			定点医疗机构信息 d
+		WHERE
+			y.结算日期 = to_date(#{currentTime}, 'yyyy/MM/dd HH24:mi:ss')
+		AND 
+			j.个人编号 = y.个人编号
+		AND 
+			d.机构编号 = y.服务机构代码
+		AND 
+			instr(y.医疗类别, '住院') > 0
+		<if test="areaFlag != null and areaFlag eq 'local'">
+			AND instr(y.服务机构代码, 'H') = 1
+		</if>
+		<if test="areaFlag != null and areaFlag eq 'offSite'">
+			AND instr(y.服务机构代码, 'H') = 0
+		</if>
+	</select>
+	
+	
+	<!-- 近24小时交易信息（本地就医出院人次统计） -->
+	<select id="getRealTimeLocalDischargeVisitors" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RealTimeTransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.RealTimeDischargeVisitorsVO">
+		SELECT
+		  	trunc(to_number (to_char (出院日期, 'hh24') ) ) AS currentHour,
+		  	count(出院日期) AS discharge
+		FROM
+		  	个人医疗登记结算信息
+		WHERE
+		 	 出院日期   BETWEEN to_date(#{startTime}, 'yyyy/MM/dd HH24:mi:ss') AND to_date(#{endTime}, 'yyyy/MM/dd HH24:mi:ss')
+		AND 
+			instr(定点编号, 'H') = 1
+		AND 
+			instr(医疗类别, '住院') > 0
+		GROUP BY
+		  	trunc(to_number (to_char (出院日期, 'hh24') ) )
+		ORDER BY 
+		  	trunc(to_number (to_char (出院日期, 'hh24') ) )
+	</select>
+	
+	
+	<!-- 近24小时交易信息（异地就医出院人次统计） -->
+	<select id="getRealTimeOffsiteDischargeVisitors" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RealTimeTransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.RealTimeDischargeVisitorsVO">
+		SELECT
+		  	trunc(to_number (to_char (出院日期, 'hh24') ) ) AS currentHour,
+		  	count(出院日期) AS discharge
+		FROM
+		  	个人医疗登记结算信息
+		WHERE
+		 	 出院日期   BETWEEN to_date(#{startTime}, 'yyyy/MM/dd HH24:mi:ss') AND to_date(#{endTime}, 'yyyy/MM/dd HH24:mi:ss')
+		AND 
+			instr(定点编号, 'H') = 0
+		AND 
+			instr(医疗类别, '住院') > 0
+		GROUP BY
+		  	trunc(to_number (to_char (出院日期, 'hh24') ) )
+		ORDER BY 
+		  	trunc(to_number (to_char (出院日期, 'hh24') ) )
+	</select>
+	
+	
+	<!-- 近24小时交易信息（本地就医结算人次统计） -->
+	<select id="getRealTimeLocalSettlementVisitors" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RealTimeTransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.RealTimeSettlementVisitorsVO">
+		SELECT
+			trunc(to_number (to_char (结算日期, 'hh24') ) ) AS currentHour,
+			count(结算日期) AS settlementNumber
+		FROM
+			个人医疗结算信息
+		WHERE
+			结算日期  BETWEEN to_date(#{startTime}, 'yyyy/MM/dd HH24:mi:ss') AND to_date(#{endTime}, 'yyyy/MM/dd HH24:mi:ss')
+		AND 
+			instr(服务机构代码, 'H') = 1
+		GROUP BY
+			trunc(to_number (to_char (结算日期, 'hh24') ) )
+		ORDER BY 
+			trunc(to_number (to_char (结算日期, 'hh24') ) )
+	</select>
+	
+	
+	<!-- 近24小时交易信息（异地就医结算人次统计） -->
+	<select id="getRealTimeOffsiteSettlementVisitors" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RealTimeTransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.RealTimeSettlementVisitorsVO">
+		SELECT
+			trunc(to_number (to_char (结算日期, 'hh24') ) ) AS currentHour,
+			count(结算日期) AS settlementNumber
+		FROM
+			个人医疗结算信息
+		WHERE
+			结算日期  BETWEEN to_date(#{startTime}, 'yyyy/MM/dd HH24:mi:ss') AND to_date(#{endTime}, 'yyyy/MM/dd HH24:mi:ss')
+		AND 
+			instr(服务机构代码, 'H') = 0
+		GROUP BY
+			trunc(to_number (to_char (结算日期, 'hh24') ) )
+		ORDER BY 
+			trunc(to_number (to_char (结算日期, 'hh24') ) )
+	</select>
+	
+	
+	<!-- 近24小时交易信息（本地就医结算费用统计） -->
+	<select id="getRealTimeLocalSettlementFee" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RealTimeTransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.RealTimeSettlementFeeVO">
+		SELECT
+	      	trunc(to_number (to_char (结算日期, 'hh24') ) ) AS currentHour,
+	      	sum(金额) AS settlementFee
+	    FROM
+	      	个人医疗费用信息
+	    WHERE
+	      	结算日期  BETWEEN to_date(#{startTime}, 'yyyy/MM/dd HH24:mi:ss') AND to_date(#{endTime}, 'yyyy/MM/dd HH24:mi:ss')
+	    AND 
+	    	instr(服务机构代码, 'H') = 1
+	    GROUP BY
+	      	trunc(to_number (to_char (结算日期, 'hh24') ) )
+	    ORDER BY 
+	      	trunc(to_number (to_char (结算日期, 'hh24') ) )
+	</select>
+	
+	
+	<!-- 近24小时交易信息（异地就医结算费用统计） -->
+	<select id="getRealTimeOffsiteSettlementFee" 
+			parameterType="com.tecsun.sisp.adapter.modules.monitor.entity.request.RealTimeTransactionQueryBean"
+			resultType="com.tecsun.sisp.adapter.modules.monitor.entity.response.RealTimeSettlementFeeVO">
+		SELECT
+	      	trunc(to_number (to_char (结算日期, 'hh24') ) ) AS currentHour,
+	      	sum(金额) AS settlementFee
+	    FROM
+	      	个人医疗费用信息
+	    WHERE
+	      	结算日期  BETWEEN to_date(#{startTime}, 'yyyy/MM/dd HH24:mi:ss') AND to_date(#{endTime}, 'yyyy/MM/dd HH24:mi:ss')
+	    AND 
+	    	instr(服务机构代码, 'H') = 0
+	    GROUP BY
+	      	trunc(to_number (to_char (结算日期, 'hh24') ) )
+	    ORDER BY 
+	      	trunc(to_number (to_char (结算日期, 'hh24') ) )
+	</select>
+	
+</mapper>

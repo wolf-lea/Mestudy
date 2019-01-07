@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+   <script src="jquery.js" type="text/javascript"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="pragma" content="no-cache"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store"/>
+    <meta http-equiv="expires" content="0"/>
+
+    <style type="text/css">
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: #f0f4fb;
+        }
+
+        .body-bg {
+            background-image: url(/UI/images/bg.png);
+            background-repeat: repeat-x;
+            text-align: center;
+            background-color: #f0f4fb;
+            display: block;
+            height: 100%;
+            margin: 0 auto;
+        }
+
+        .title-bg {
+            background-image: url(/UI/images/login_02.gif);
+            background-repeat: no-repeat;
+            width: 581px;
+            height: 111px;
+            margin: 0 auto;
+        }
+
+        .title {
+            font-weight: bold;
+            font-size: 30px;
+            font-family: "微软雅黑", "黑体";
+            color: #ffffff;
+            text-align: left;
+            padding-top: 25px;
+            padding-left: 45px;
+        }
+
+        .login-bg {
+            background-image: url(/UI/images/login_03.gif);
+            background-repeat: no-repeat;
+            width: 581px;
+            height: 212px;
+            margin: 0 auto;
+        }
+
+        .login-bg table {
+            margin-left: 50px;
+        }
+
+        .login-bg .span-font {
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .login-bg .input-text {
+            border: solid #7e7e7e 1px;
+            width: 200px;
+            height: 24px;
+            line-height: 24px;
+        }
+
+        .login-bg .input-button {
+            background-image: url(/UI/images/button_bg.png);
+            background-repeat: repeat-x;
+            height: 24px;
+            border: solid #68724d 1px;
+            color: #ffffff;
+            font-size: 14px;
+            width: 80px;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        function login() {
+            var actionUri = platform_context_path + "/aam/sso/account/login";
+            var type = "3";
+            var password = md5($("#pwd").val());
+            var data = {login_name: $("#login_name").val(), pwd: password};
+            var method = "post";
+            callUrlAction(method, type, data, actionUri, callback);
+        }
+
+        function callback(data, type) {
+            if (type == "success") {
+                callUrlAction("", "1", "", "/AAManagement-html/acction_list.html", "");
+            } else if (type == "error") {
+                tecsunAlert("提示", "服务器错误,请联系管理员", "error");
+            }
+        }
+        
+        document.onkeydown=function(event){
+        		
+        		var e = event || window.event || arguments.callee.caller.arguments[0] ;
+        		if(e && e.keyCode == 13){  //回车事件
+        			document.getElementById('logincommit').click();
+        		}
+          } ;
+        
+	   function getCodePic(){
+			var uri = "sisp/cmp/common/user/getKaptchaImage";
+			var data = "";
+			var async = false;
+		    $.ajax({
+		    	type : "post",
+		    	url : uri,
+		    	data : JSON.stringify(data),
+				contentType : 'application/json; charset=UTF-8',
+				dataType : 'text',
+		    	success : function(data) {
+					if(data == undefined){
+						Alert({message:'验证码获取失败!！',title:'温馨提示',width:300,height:200});
+					}else if(data != ""){
+						var checkCode = data.substring(0,4);
+						var imgs=data.substring(4,data.length);
+						$.cookie("checkCode",checkCode);
+						var code = "data:image/gif;base64,"+imgs;
+						$("#codePic").attr("src",code);
+					}
+				},
+				error:function(data){
+					Alert({message:'获取验证码异常，请稍后再试!！',title:'温馨提示',width:300,height:200});
+				},
+			});
+	   }
+    </script>
+</head>
+<body>
+<div class="body-bg">
+
+
+    <div><img src="../../UI/images/login_01.gif"/></div>
+
+    <div class="title-bg">
+        <div class="title">XXX业务平台</div>
+    </div>
+    <div class="login-bg">
+        <table width="360px" border="0" cellspacing="8" cellpadding="5" align="center">
+            <tr>
+                <td colspan="2" height="20px">&nbsp;</td>
+            </tr>
+            <tr>
+                <td width="16%" align="center">
+                    <span class="span-font">用户名：</span></td>
+                <td width="84%" align="left">
+                    <input id="username" class="input-text" name="username" value="" type="text"
+                           placeholder="请输入用户名"/>
+                </td>
+            </tr>
+            <tr>
+                <td align="center"><span class="span-font">密&nbsp;&nbsp;码：</span></td>
+                <td align="left">
+                    <input id="password" name="password" class="input-text" name="" type="password" value=""
+                           required="required" placeholder="请输入密码"/>
+                </td>
+            </tr>
+             <tr>
+                <td align="center"><span class="span-font">验证码：</span></td>
+                <td align="left">
+                    <input id="msgcode" name="msgcode" class="input-text" name="" type="text" style="width:190px;" />
+                    <a class="code-bg" href='javascript:void(0);' onclick='getCodePic()' style="float:left;">
+						<img id='codePic' alt='点击获取验证码' 
+						style="display: table-cell; vertical-align:-32%;margin-top:16px;" width='150px' height='42px'/>
+					</a>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="left">
+                    <input class="input-button" id ="logincommit" name="" type="button" onclick="login()" value="登&nbsp;&nbsp;录"/>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input class="input-button" name="" type="reset" value="重&nbsp;&nbsp;置"/>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div><img src="../../UI/images/login_04.png"/></div>
+
+
+</div>
+</body>
+</html>

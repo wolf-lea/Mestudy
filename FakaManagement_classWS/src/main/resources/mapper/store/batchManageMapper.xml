@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.store.BatchManageServiceImpl">
+
+    <!-- 批次管理-新增批次信息 -->
+    <insert id="addBatchInfo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        <selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select SEQ_CARD_BATCH.nextval from dual
+        </selectKey>
+        insert into card_batch(id,BATCH_NO,BATCH_NUM,BATCH_SUM,BANK,KS,STATUS,FB_STATUS,create_time)
+        values(#{id},#{batchNo},#{batchNum},#{batchSum},#{bank},#{factoryId},'00','00',sysdate)
+    </insert>
+
+    <!-- 导入批次-新增批次信息 -->
+    <insert id="addBatchInfoByExcle" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        <selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select SEQ_CARD_BATCH.nextval from dual
+        </selectKey>
+        insert into card_batch(id,BATCH_NO,BATCH_NUM,BATCH_SUM,BANK,KS,STATUS,FB_STATUS,create_time)
+        values(#{id},#{batchNo},#{batchNum},#{batchSum},#{bank},#{ks},'04','01',sysdate)
+    </insert>
+
+    <!-- 批次管理-查询批次信息 -->
+    <select id="getBatchInfos" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.BatchManageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+
+        select id,BATCH_NO,BATCH_NUM,BATCH_SUM,BANK,KS,STATUS,FB_STATUS,CREATE_TIME from CARD_BATCH
+        <where>
+            <if test="id!=null and id!=''" >
+                id=#{id}
+            </if>
+            <if test="batchNo!=null and batchNo!=''" >
+                and batch_no=#{batchNo}
+            </if>
+            <if test="beginDate!=null and beginDate!=''" >
+                and create_time &gt;= to_date(#{beginDate},'yyyy/mm/dd hh24:mi:ss')
+            </if>
+            <if test="endDate!=null and endDate!=''" >
+                and create_time &lt; to_date(#{endDate},'yyyy/mm/dd hh24:mi:ss')
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 批次下载管理-查询批次明细信息 -->
+    <select id="getBatchInfoDetail" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.store.BatchManageBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+
+        select id,BATCH_NO,BATCH_NUM,BATCH_SUM,BANK,STATUS,fb_status as fbStatus from CARD_BATCH
+        <where>
+            <if test="batchNo!=null and batchNo!=''" >
+                batch_no=#{batchNo}
+            </if>
+            <if test="bankId!=null and bankId!=''" >
+                and bank=#{bankId}
+            </if>
+            <if test="status!=null and status!=''" >
+                and status=#{status}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <update id="updateBatchStatus" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        update CARD_BATCH
+        <set>
+            status=#{status},update_time=sysdate,
+            <if test="batchSum!=null and batchSum!=''">
+                batch_sum=#{batchSum},
+            </if>
+            <if test="message!=null and message!=''">
+                message=#{message}
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <!-- 批次管理-新增批次箱盒表信息 -->
+    <insert id="addBatchBinBox" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        <selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+            select SEQ_CARD_BATCH_BINBOX.nextval from dual
+        </selectKey>
+        insert into CARD_BATCH_BINBOX(id,BATCH_ID,BIN,BOX,QY,STATUS,create_time)
+        values(#{id},#{batchId},#{bin},#{box},#{qy},#{bStatus},sysdate)
+    </insert>
+
+    <!-- 批次管理-新增批次详细信息 -->
+    <insert id="addBatchDetail" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        insert into CARD_BATCH_DETAIL(id,BATCH_ID,BATCH_BINBOX_ID,NAME,IDCARD,CARDID,BATCH_NO,KG_ZXWZ,XT_ZXWZ,COMPANY_CODE,
+        COMPANY_NAME,PHONE,MOBILE,ADDRESS,BANK,CITY,ORGID,FLAG,create_time)
+        values(SEQ_CARD_BATCH_DETAIL.nextval,#{batchId},#{batchBinBoxId},#{name},#{idcard},#{cardId},#{batchNo},#{kgzxwz},#{xtzxwz},#{companyCode},
+        #{companyName},#{phone},#{mobile},#{address},#{bank},#{city},#{orgId},#{flag},sysdate)
+    </insert>
+
+    <!-- 根据批次号，箱号，盒号查询 -->
+    <select id="getBatchidBinBoxInfo" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO"
+        resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        select id,batch_id,bin,box,status,rkwd,ccid from CARD_BATCH_BINBOX
+        where 1=1
+        <if test="batchId!=null" >
+            and batch_id=#{batchId}
+        </if>
+        <if test="bin!=null and bin!=''" >
+            and bin=#{bin}
+        </if>
+        <if test="box!=null and box!=''" >
+            and box=#{box}
+        </if>
+    </select>
+
+    <!-- 根据身份证号查询卡信息 -->
+    <select id="getCardDetailByIdcard" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        select id,name,idcard from CARD_BATCH_DETAIL
+        where 1=1
+        <if test="idcard!=null and idcard!=''" >
+            and idcard=#{idcard}
+        </if>
+    </select>
+    <select id="getCardInfoByIdcard" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        select id,name,idcard from CARD_INFO
+        where 1=1
+        <if test="idcard!=null and idcard!=''" >
+            and idcard=#{idcard}
+        </if>
+    </select>
+
+    <!-- 二次入库-新增卡详细信息 -->
+    <insert id="addCardInfoDetail" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        insert into CARD_INFO(ID,NAME,IDCARD,CARDID,BATCH_NO,COMPANY_CODE,COMPANY_NAME,ANGENT,
+        PHONE,ADDRESS,OLD_CFWZ,STATUS,FKWD,BANK,REGINALCODE,INPUT_TIME,XT_ZXWZ)
+        values(SEQ_CARD_INFO.nextval,#{name},#{idcard},#{cardId},#{batchNo},#{companyCode},#{companyName},#{name},
+        #{phone},#{address},#{kgzxwz},2,#{rkwd},#{bank},#{city},sysdate,#{kgzxwz})
+    </insert>
+    <!-- 二次入库-新增卡位置信息 -->
+    <insert id="addCardStoreDetail" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.result.store.BatchManageVO">
+        insert into CARD_STORE(id,csid,ciid,ccid,store_time,bin,box)
+        values(SEQ_CARD_STORE.nextval,#{csid},#{ciid},#{ccid},sysdate,#{bin},#{box})
+    </insert>
+
+</mapper>

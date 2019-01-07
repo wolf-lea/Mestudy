@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.TestCsspServiceImpl">
+
+	<select id="getBankData" parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.BankDataVO"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.response.BankDataVO">
+		select * from test_bank_info t where 1=1
+		<if test="bankCode!=null and bankCode !=''">
+            and t.bank_code= #{bankCode}
+		</if><if test="parentCode!=null and parentCode !=''">
+            and t.parent_code= #{parentCode}
+		</if>
+	</select>
+
+    <select id="getPolicePhotos" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CsspPolicePhotoVO">
+		select t.sfzh,t.xm,t.photo from test_police_photo_info t where 1=1
+		<if test="sfzh!=null and sfzh !=''">
+            and t.sfzh= #{sfzh}
+		</if>
+        <if test="xm!=null and xm !=''">
+            and t.xm= #{xm}
+		</if>
+	</select>
+    <!--存入制卡进度-->
+    <insert id="insertCardProgress"
+            parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+        INSERT INTO TEST_CARD_PROGRESS (
+        xm,sfzh,applytime,status,UPDATE_TIME)
+        VALUES
+        (#{xm} ,#{sfzh} ,#{applytime} ,#{status} ,sysdate)
+    </insert>
+
+    <!--社保卡申请-修改制卡进度-->
+    <update id="updateCardProgress"
+            parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+    UPDATE TEST_CARD_PROGRESS SET UPDATE_TIME=sysdate
+        <if test="insuretime !=null and insuretime !=''">,insuretime=#{insuretime}</if>
+        <if test="citytime !=null and citytime !=''">,citytime=#{citytime}</if>
+        <if test="gettime !=null and gettime !=''">,gettime=#{gettime}</if>
+        <if test="status !=null and status !=''  ">,status=#{status}</if>
+        WHERE sfzh = #{sfzh}
+        <if test="sbkh !=null and sbkh !=''  ">and sbkh=#{sbkh}</if>
+        <if test="xm !=null and xm !=''  ">and xm=#{xm}</if>
+    </update>
+    <!--社保卡申请-修改制卡进度-->
+    <update id="updateCardProgressOfSfzh"
+            parameterType="com.tecsun.sisp.adapter.modules.card.entity.response.CardProgressVO">
+        UPDATE TEST_CARD_PROGRESS SET UPDATE_TIME=sysdate
+        <if test="status !=null and status !=''  ">,status=#{status}</if>
+        <if test="citytime !=null and citytime !=''  ">,citytime=#{citytime}</if>
+        <if test="sbkh !=null and sbkh !=''  ">,sbkh=#{sbkh}</if>
+        WHERE sfzh = #{sfzh}
+        <if test="xm !=null and xm !=''  ">and xm=#{xm}</if>
+    </update>
+    
+    <select id="getVerifyRecord" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+    	resultType="com.tecsun.sisp.adapter.modules.card.entity.response.VerifyRecordVo">
+    		select record_id as recordId ,XM as xm, SFZH as  sfzh , REASON  as reason ,VERIFY_TIME  as verifyTime , 
+    		VERIFY_STATUS  as verifyStatus   ,create_time as createTime ,isdealed as isDealed  from TEST_VERIFY_RECORD 
+  		<choose>
+  			<when test="sfzh != null and sfzh != ''">
+  				where sfzh = #{sfzh} and isdealed = 0 order by create_time desc
+  			</when>
+  			<otherwise>
+  				where isdealed = 0 order by create_time desc
+  			</otherwise>
+  		</choose>
+    </select>
+    
+    <!--社保卡申请- 审核详情查询 -->
+    
+    <select id="getVerifyDetail"  parameterType="java.util.Map"
+    	resultType="com.tecsun.sisp.adapter.modules.card.entity.response.VerifyRecordVo">
+    	select record_id as recordId,apply_id as applyId , XM as xm, SFZH as  sfzh , REASON  as reason ,VERIFY_TIME  as verifyTime ,
+    	 VERIFY_STATUS  as verifyStatus   ,create_time as createTime ,isdealed as isDealed 
+  from TEST_VERIFY_RECORD where record_id = #{recordId}
+    
+    </select>
+    
+    
+      <!--社保卡申请- 更新审核失败的记录 -->
+   <select id="updateVerifyStatus" parameterType="java.util.Map">
+   		update TEST_VERIFY_RECORD set isdealed = 1 where sfzh = #{sfzh} and xm = #{xm}
+   </select>
+   
+   <select id="getVerifyBySfzhAndXm" parameterType="java.util.Map" resultType="com.tecsun.sisp.adapter.modules.card.entity.response.VerifyRecordVo">
+   select * from (
+   		select record_id as recordId,apply_id as applyId , XM as xm, SFZH as  sfzh , REASON  as reason ,VERIFY_TIME  as verifyTime ,
+    	 VERIFY_STATUS  as verifyStatus   ,create_time as createTime ,isdealed as isDealed 
+  from TEST_VERIFY_RECORD where xm = #{xm} and sfzh = #{sfzh} order by createTime desc
+  	) where   rownum = 1
+   </select>
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.family.service.impl.MyFamilyServiceImpl">
+
+	<!-- 获取成员列表 -->
+	<select id="getFamilyList" parameterType="java.lang.String"
+			resultType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean">
+		SELECT t.family_id as id, t.* FROM T_YTH_ACCOUNT_FAMILY t WHERE
+		masterSfzh = #{sfzh} and is_delete = 1
+	</select>
+
+	<!-- 获取某个成员信息 -->
+	<select id="getFamilyPersonInfo" parameterType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean"
+			resultType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean">
+		SELECT t.family_id as id,is_delete as isDelete, t.* FROM T_YTH_ACCOUNT_FAMILY t WHERE
+		masterSfzh = #{masterSfzh} and name = #{name} and sfzh = #{sfzh} and relationship = #{relationship}
+	</select>
+
+	<!-- 修改成员状态 -->
+	<update id="updateStatusById"
+			parameterType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean">
+		update T_YTH_ACCOUNT_FAMILY set is_delete = 1 where family_id=#{id}
+	</update>
+
+	<!-- 添加成员 -->
+	<insert id="addFamily"
+			parameterType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean">
+		insert into
+		T_YTH_ACCOUNT_FAMILY(name, relationship, sex, sfzh, phone,
+		masterSfzh,
+		is_delete)
+		values
+		(#{name},#{relationship},#{sex},#{sfzh},#{phone},#{masterSfzh},1)
+	</insert>
+
+	<!-- 修改成员信息 -->
+	<update id="updateFamilyById"
+			parameterType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean">
+		update T_YTH_ACCOUNT_FAMILY set family_id = family_id
+		<if test="name != null and name !=''">
+			,name=#{name}
+		</if>
+		<if test="relationship != null and relationship != ''">
+			,relationship=#{relationship}
+		</if>
+		<if test="sfzh != null and sfzh != ''">
+			,sfzh=#{sfzh}
+		</if>
+		<if test="phone != null and phone != ''">
+			,phone=#{phone}
+		</if>
+		where family_id=#{id} and is_delete = 1
+	</update>
+
+	<!-- 删除成员 -->
+	<update id="deleteFamily"
+			parameterType="com.tecsun.sisp.adapter.modules.family.entity.request.MyFamilyBean">
+		update T_YTH_ACCOUNT_FAMILY
+		set
+		is_delete = 0 where masterSfzh = #{masterSfzh} and
+		family_id = #{id}
+	</update>
+
+</mapper>

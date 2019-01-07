@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.question.service.impl.QuestionServiceImpl">
+
+
+  <!-- 添加投诉建议、表扬点赞 -->
+	<insert id="addSendInfo"
+			parameterType="com.tecsun.sisp.adapter.modules.question.entity.request.QuestionBean">
+		insert into
+		T_SEND(id, wechatid, context, status, type,organ,createtime,updatetime,channeltype,send_name,
+        send_phone,bank_code,distinct_code,net_code,org_code,question_type)
+		values
+		(T_SEND_ID_SEQ.nextVal,#{wechatid},#{context},'0',#{type},#{organ},sysdate,sysdate,#{channelcode},
+		#{sendName},#{sendPhone},#{bankCode},#{distinctCode},#{netCode},#{orgCode},#{questionType})
+	</insert>
+	
+	
+	<!--查询本微信ID发送列表-->
+	<select id="getSendList" parameterType="com.tecsun.sisp.adapter.modules.question.entity.request.QuestionBean"
+			resultType="com.tecsun.sisp.adapter.modules.question.entity.response.SendVO">
+		SELECT  t.id,t.wechatid,t.context,t.status,t.type,t.organ,t.createtime,t.updatetime,t.send_name,t.send_phone,
+		(case when t.bank_code is not null then (select o.name from t_org o where o.org_code=t.bank_code) else '' end) as bankName,
+		(case when t.distinct_code is not null then (select d.name from t_distinct d where t.distinct_code=d.code) else '' end) as distinctName,
+		(case when t.net_code is not null then (select g.name from t_org g where t.net_code=g.org_code) else '' end) as netName,
+		(case when t.org_code is not null then (select n.name from t_dictionary n where n.code=t.org_code and n.groupid='HUMAN_ORG') else '' end) as orgName,
+		(case when t.question_type is not null then (select n.name from t_dictionary n where n.code=t.question_type and n.groupid=
+		(case when t.type='0' or t.type='1' then 'ADVISE_TYPE' when t.type='2' then 'PRAISE_TYPE' else '' end))  else '' end) as questionType
+		FROM T_SEND t where t.wechatid = #{wechatid} and t.status = '0' and t.type=#{type}	
+		<if test="organ != null and organ !=''">
+			and t.organ=#{organ}
+		</if>
+		<if test="beginTime!=null and beginTime!=''">
+            and t.createtime &gt;=to_date(#{beginTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.createtime &lt;=to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		order by t.createtime desc
+	</select>
+	
+	
+	<!--查询某条发送信息的回复列表-->
+	<select id="getReplyList" parameterType="com.tecsun.sisp.adapter.modules.question.entity.request.QuestionBean"
+			resultType="com.tecsun.sisp.adapter.modules.question.entity.response.ReplyVO">
+		SELECT  t.* FROM T_REPLY t WHERE
+		send_id = #{id} 
+		<if test="beginTime!=null and beginTime!=''">
+            and createtime &gt;=to_date(#{beginTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and createtime &lt;=to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+		order by createtime desc
+	</select>
+	
+	<!--查询发送信息详情 -->
+	<select id="getSendDetail" parameterType="com.tecsun.sisp.adapter.modules.question.entity.request.QuestionBean"
+			resultType="com.tecsun.sisp.adapter.modules.question.entity.response.SendVO">
+		SELECT  t.id,t.wechatid,t.context,t.status,t.type,t.organ,t.createtime,t.updatetime,t.send_name,t.send_phone,
+		(case when t.bank_code is not null then (select o.name from t_org o where o.org_code=t.bank_code) else '' end) as bankName,
+		(case when t.distinct_code is not null then (select d.name from t_distinct d where t.distinct_code=d.code) else '' end) as distinctName,
+		(case when t.net_code is not null then (select g.name from t_org g where t.net_code=g.org_code) else '' end) as netName,
+		(case when t.org_code is not null then (select n.name from t_dictionary n where n.code=t.org_code and n.groupid='HUMAN_ORG') else '' end) as orgName,
+			(case when t.question_type is not null then (select n.name from t_dictionary n where n.code=t.question_type and n.groupid=
+		(case when t.type='0' or t.type='1' then 'ADVISE_TYPE' when t.type='2' then 'PRAISE_TYPE' else '' end))  else '' end) as questionType
+		 FROM T_SEND t WHERE t.status = '0' and t.id=#{id}		
+	</select>
+
+
+</mapper>

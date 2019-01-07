@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.appoint.service.impl.BusinessServiceImpl">
+
+    <!-- 获取业务-->
+    <select id="getService" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.ServiceBean"
+            resultType="com.tecsun.sisp.adapter.modules.appoint.entity.response.ServiceVo">
+        select * from t_yth_evaluate_service t where t.parent_code = #{parentCode} and t.is_use='0' ORDER by sort
+    </select>
+
+    <!-- 获取区域-->
+    <select id="getDistrict" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.DistrictBean"
+            resultType="com.tecsun.sisp.adapter.modules.appoint.entity.response.DistrictVo">
+        select * from T_YTH_APPOINT_DISTRICT d
+        where 1=1
+        <if test="districtName != null and districtName != ''">
+            and d.district_name = #{districtName}
+        </if>
+        <if test="districtCode != null and districtCode != ''">
+            and d.district_code = #{districtCode}
+        </if>
+        <if test="parentCode != null and parentCode != ''">
+            and d.parent_code = #{parentCode}
+        </if>
+    </select>
+
+    <!-- 获取服务网点-->
+    <select id="getBranch" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.BranchBean"
+            resultType="com.tecsun.sisp.adapter.modules.appoint.entity.response.BranchVo">
+        select b.id as branchId, b.name as branchName, b.address as branchAddress, b.telephone as branchPhone, b.* from t_yth_branch b
+        where b. id
+        in(select bc.branch_id from T_YTH_BRANCH_SERVICE bc where bc.services_code = #{serviceCode})
+        <if test="addressCode!=null and addressCode!=''">
+            and b.address_code = #{addressCode}
+        </if>
+    </select>
+
+    <!-- 获取预约时间 预约状态 预约量-->
+    <select id="getTime" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.TimeBean"
+            resultType="com.tecsun.sisp.adapter.modules.appoint.entity.response.TimeTempVo">
+        select t.service_code,to_char(appoint_time,'yyyy-mm-dd') as appoint_time,t.time_interval,
+        t.appoint_amount,t.appoint_amount_limit,t.appoint_status
+        from t_yth_appoint_time t where t.service_code = #{serviceCode}
+        <if test="timeInterval!=null and timeInterval!=''">
+            and TIME_INTERVAL=#{timeInterval}
+        </if>
+        <if test="appointTime!=null and appointTime!=''">
+            and appoint_time=to_date(#{appointTime},'yyyy-mm-dd')
+        </if>
+        <if test="appointTime==null or appointTime==''">
+            and appoint_time &gt; (sysdate) and appoint_time &lt;=(sysdate + 8)
+        </if>
+        order by appoint_time asc,TIME_INTERVAL asc
+    </select>
+
+    <!-- 更新预约时间 预约量 预约状态-->
+    <update id="updateTime" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.TimeBean">
+        UPDATE t_yth_appoint_time SET update_time=sysdate, appoint_amount=appoint_amount+1
+        <if test="appointStatus!=null and appointStatus!=''">
+            , appoint_status=#{appointStatus}
+        </if>
+        where service_code=#{serviceCode}
+        and appoint_time=to_date(#{appointTime},'yyyy-mm-dd')
+        and time_interval=#{timeInterval}
+    </update>
+
+    <!-- 新增预约记录-->
+    <insert id="insertRecord" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.RecordBean">
+        INSERT INTO T_YTH_APPOINT_RECORD
+        (XM,SFZH,PHONE,SERVICE_CODE,SERVICE_NAME,
+        APPOINT_TIME,TIME_INTERVAL,APPOINT_NUM,BRANCH_CODE,BRANCH_NAME,
+        BRANCH_ADDRESS,STANDBY_1,STANDBY_2,STANDBY_3, CHANNELCODE)
+        VALUES
+        (#{xm},#{sfzh},#{phone},#{serviceCode},#{serviceName},
+        to_date(#{appointTime},'yyyy-MM-dd'),#{timeInterval},#{appointNum},#{branchCode},#{branchName},
+        #{branchAddress},#{standby1},#{standby2},#{standby3},#{channelcode})
+    </insert>
+
+    <!-- 查询预约记录-->
+    <select id="getRecord" parameterType="com.tecsun.sisp.adapter.modules.appoint.entity.request.RecordBean"
+            resultType="com.tecsun.sisp.adapter.modules.appoint.entity.response.RecordVo">
+        select * from T_YTH_APPOINT_RECORD r
+        where r.xm=#{xm} AND r.sfzh=#{sfzh}
+        <if test="serviceCode!=null and serviceCode!=''">
+            and r.service_code = #{serviceCode}
+        </if>
+        <if test="appointTime!=null and appointTime!=''">
+            and appoint_time=to_date(#{appointTime},'yyyy-mm-dd')
+        </if>
+        <if test="appointNum!=null and appointNum!=''">
+            and appoint_num=#{appointNum}
+        </if>
+        ORDER BY r.update_time DESC
+    </select>
+</mapper>

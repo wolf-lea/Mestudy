@@ -1,0 +1,734 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<SCRIPT src="jquery.js" type=text/javascript></SCRIPT>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store">
+    <meta http-equiv="expires" content="0">
+    <SCRIPT type=text/javascript>
+        function a(){
+        	alert('11111111111');
+
+            var url='/ifacesuportservice/iface/rest/queryZdcxGrxxInfo';
+            var data= {
+//                pageNo: 1,
+//                pageSize: 1,
+                channelcode: 'channeltype',
+                aac002: '000',
+                xm: '小明'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.data.length);
+                }
+            });
+        }
+        
+        
+        function test1(){
+            var url='/ifacesuportservice/iface/rest/queryZdcxGrjnInfo';
+            var data={
+                channelcode: 'channeltype',
+                aac002: '000',
+                xm: '风云'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.data.length);
+//                   alert(result.data[0].dwmc);
+                   //alert(result.data.list.length);
+                }
+            });
+        }
+        
+        
+        function test2(){
+            var url='/ifacesuportservice/iface/rest/queryZdcxYlmxInfo';
+            var data={
+                channelcode: 'channeltype',
+                aac002: '123456789',
+                xm: '小明'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data.name);
+                }
+            });
+        }
+        
+        function test31(){
+        	   var url='/ifacesuportservice/iface/rest/queryZdcxYlzhyeInfo';
+             var data={
+                 channelcode: 'channeltype',
+                 aac002: '1234567890',
+                 xm: '小明'
+             }
+             $.ajax({
+                 type:'post',
+                 url:url,
+                 data:JSON.stringify(data),
+                 contentType:'application/json; charset=UTF-8',
+                 dataType:'json',
+                 success:function(result){
+                     var transArray =result.data;
+                     alert(result.statusCode);
+                     alert(result.data.length);
+                 }
+             });
+        }
+        
+        
+        
+        function test32(){
+     	   var url='/ifacesuportservice/iface/rest/queryZdcxJfbl';
+          var data={
+              channelcode: 'channeltype',
+              aac002: '000',
+              xm: '小明'
+          }
+          $.ajax({
+              type:'post',
+              url:url,
+              data:JSON.stringify(data),
+              contentType:'application/json; charset=UTF-8',
+              dataType:'json',
+              success:function(result){
+                  var transArray =result.data;
+                 alert(result.statusCode);
+                 alert(result.message);
+                 alert(result.data[0].yjhj);
+                 
+              }
+          });
+     }
+        
+        function test33(){
+      	   var url='/ifacesuportservice/iface/rest/queryZdcxDwjnInfo';
+           var data={
+        		   channelcode : 'channeltype',
+             		sfzhm:'410503197507122512',
+             		xzbz:'301'
+           }
+           $.ajax({
+               type:'post',
+               url:url,
+               data:JSON.stringify(data),
+               contentType:'application/json; charset=UTF-8',
+               dataType:'json',
+               success:function(result){
+            	   var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data[0].xb);
+               }
+           });
+      }
+        
+        function test3(){
+
+            var url='/IFaceSuperService_nc/iface/cardInfo/getCardStatus';
+            var data={
+            		//idcard:'360923193908031827'
+            		idcard:'360782198503163014'
+            		//idcard:'360402193708041714'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data.data[0].aac001);
+                }
+            });
+        }
+        
+        function gs(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay/iface/rest/getHurtStayInfo';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410504194803032039'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data.name);
+                }
+            });
+        }
+        
+        function yljf(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay/iface/rest/getPersonPesionPay';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410504194803032039',
+            		 pageno:1,
+            		 pageSize:1
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data.data[0].aae002);
+                }
+            });
+        }
+        
+        
+        function syjf(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay/iface/rest/getLoseFeeIncureList';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410504194803032039',
+            		// aac003:'杨海水',
+            		 pageno:1,
+            		 pageSize:10
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data.data[0].aae002);
+                }
+            });
+        }
+        
+        
+        function gsjf(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay/iface/rest/getHurtInfoIncureList';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410504194803032039',
+            		 aac003:'杨海水',
+            		 pageno:1,
+            		 pageSize:1
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data.data[0].aae002);
+                }
+            });
+        }
+        
+        
+        
+        function ylcbxxxc(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay_new/iface/rest/getPesionPayBaseInfo';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410503197507122512',
+            		 pageno:1,
+            		 pageSize:1
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data[0].aac009);
+                }
+            });
+        }
+        
+        
+        
+        function a1(){
+        	alert('11111111111');
+        	debugger;
+            var url='/IFaceSuperService_ay/iface/rest/queryPerPayBirthBase';
+            var data={
+            		pageno:1,
+           		 pageSize:1,
+            		channelcode : 'channeltype',
+            		sfzhm:'51021219671214455X'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.data.length);
+                   alert(result.data[0].dwbh);
+                   alert(result.data[0].jfgz);
+                }
+            });
+        }
+        
+        
+        
+        function test11(){
+            var url='/IFaceSuperService_ay_new/iface/rest/queryPerDeclBirthMx';
+            var data={
+            		channelcode : 'channeltype',
+            		sfzhm:'51021219671214455X'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.data.length);
+                   alert(result.data[0].dwmc);
+                   alert(result.data[0].dwzjfjeSum);
+                   //alert(result.data.list.length);
+                }
+            });
+        }
+        
+        
+        function test321(){
+        	debugger;
+        	alert('1111111');
+      	   var url='/IFaceSuperService_ay_new/iface/rest/queryPerDeclBirthHz';
+           var data={
+         		  channelcode : 'channeltype',
+           		sfzhm:'410503197507122512'
+           }
+           $.ajax({
+               type:'post',
+               url:url,
+               data:JSON.stringify(data),
+               contentType:'application/json; charset=UTF-8',
+               dataType:'json',
+               success:function(result){
+                   var transArray =result.data;
+                  alert(result.statusCode);
+                  alert(result.message);
+                  alert(result.data[0].yjhj);
+                  
+               }
+           });
+      }
+        
+        function yldydf(){
+      
+      	   var url='/IFaceSuperService_ay/iface/rest//getAgeTreateBehalf';
+           var data={
+                 aac002:'410603197006222529',
+         		 pageno:1,
+          		pageSize:10
+           }
+           $.ajax({
+               type:'post',
+               url:url,
+               data:JSON.stringify(data),
+               contentType:'application/json; charset=UTF-8',
+               dataType:'json',
+               success:function(result){
+                   var transArray =result.data;
+                  alert(result.statusCode);
+                  alert(result.message);
+                  
+                  
+               }
+           });
+      }
+        
+        function ylgryzh(){
+        	
+      	   var url='/IFaceSuperService_ay/iface/rest/getAgeMonthAccount';
+           var data={
+        		aac002:'410504194803032039',
+         		pageno:1,
+         		pageSize:10
+           }
+           $.ajax({
+               type:'post',
+               url:url,
+               data:JSON.stringify(data),
+               contentType:'application/json; charset=UTF-8',
+               dataType:'json',
+               success:function(result){
+                   var transArray =result.data;
+                  alert(result.statusCode);
+                  alert(result.message);
+            
+                  
+               }
+           });
+      }
+        
+        function syjfmx(){
+        
+      	   var url='/IFaceSuperService_ay/iface/rest/getUnemployPay';
+           var data={
+         		
+        		   aac002:'410504195609060022',
+         		pageno:1,
+         		pageSize:10
+           }
+           $.ajax({
+               type:'post',
+               url:url,
+               data:JSON.stringify(data),
+               contentType:'application/json; charset=UTF-8',
+               dataType:'json',
+               success:function(result){
+                   var transArray =result.data;
+                  alert(result.statusCode);
+                  alert(result.message);
+        
+                  
+               }
+           });
+      }
+        
+        function sydy(){
+       
+      	   var url='/IFaceSuperService_ay/iface/rest/getUnemployTreat';
+           var data={
+         		
+        		   aac002:'41050219631006002X',
+         		pageno:1,
+         		pageSize:10
+           }
+           $.ajax({
+               type:'post',
+               url:url,
+               data:JSON.stringify(data),
+               contentType:'application/json; charset=UTF-8',
+               dataType:'json',
+               success:function(result){
+                   var transArray =result.data;
+                  alert(result.statusCode);
+                  alert(result.message);
+           
+                  
+               }
+           });
+      }
+        
+        
+        
+        function syjf1(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay_new/iface/rest/getPersonPesionPay';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'4105031975507122512',
+            		 aae002:'200102',
+            		// aac003:'杨海水',
+            		 pageno:1,
+            		 pageSize:10
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data[0].aae002);
+                   alert(result.data[0].aab191);
+                }
+            });
+        }
+        
+        
+        
+        function syjf2(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay_new/iface/rest/getHurtInfoIncureList';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410503197507122512',
+            		 aae002:'200102',
+            		// aac003:'杨海水',
+            		 pageno:1,
+            		 pageSize:10
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data[0].aae002);
+                }
+            });
+        }
+        
+
+        function syjf3(){
+        	alert('11111111');
+            var url='/IFaceSuperService_ay_new/iface/rest/getLoseFeeIncureList';
+            var data={
+            		 channelcode : 'channeltype',
+            		 aac002:'410503197507122512',
+            		 aae002:'200102',
+            		// aac003:'杨海水',
+            		 pageno:1,
+            		 pageSize:10
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   alert(result.message);
+                   alert(result.data[0].maxAbc);
+                }
+            });
+        }
+        
+        function syjf4(){
+        	alert('1111');
+        	 location.href='Main.html';
+       }
+        
+        
+        
+        function test123456(){
+            var url='/IFaceSuperService_ay_new/iface/rest/queryPerDeclMedicareMxSum';
+            var data={
+            		channelcode : 'channeltype',
+            		sfzhm:'410503197507122512'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   
+                   alert(result.data.dwzjfjeSum);
+                   alert(result.data.grzjfjeSum);
+                   alert(result.data.yjys);
+                   
+                   alert(result.data.sjys);
+                   alert(result.data.hzjeSum);
+                   alert(result.data.wjys);
+                   alert(result.data.dwwjjeSum);
+                   alert(result.data.grwjjeSum);
+                   
+                  
+                }
+            });
+        }
+        
+        
+        function test1234567(){
+            var url='/IFaceSuperService_ay_new/iface/rest/queryPerDeclBirthMxSum';
+            var data={
+            		channelcode : 'channeltype',
+            		sfzhm:'410503197507122512'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   
+                   alert(result.data.dwzjfjeSum);
+                   alert(result.data.grzjfjeSum);
+                   alert(result.data.yjys);
+                   
+                   alert(result.data.sjys);
+                   alert(result.data.hzjeSum);
+                   alert(result.data.wjys);
+                   alert(result.data.dwwjjeSum);
+                   alert(result.data.grwjjeSum);
+                   
+                  
+                }
+            });
+        }
+        
+        
+        function syjfSum(){
+            var url='/IFaceSuperService_ay_new/iface/rest/getPersonPesionPaySum';
+            var data={
+            		channelcode : 'channeltype',
+            		//aac002:'4105021951104200023'
+            		aac002:'4105031975507122512'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   
+                   alert("实缴月数"+result.data.sjys);
+                   alert("应缴月数"+result.data.yjys);
+                   alert("单位缴纳金额合计;"+result.data.dwjnjeSum);
+                   
+                   alert("个人缴纳金额合计"+result.data.grjnjeSum);
+                   alert("应缴金额合计"+result.data.yjjeSum);
+                   alert("欠缴月数"+result.data.qjys);
+                   alert("单位统筹欠缴金额合计"+result.data.dwtcqjjeSum);
+                   alert("个人统筹欠缴金额合计"+result.data.grtcqjjeSum);
+                   
+                  
+                }
+            });
+        }
+        
+        
+        function syjfSum1(){
+            var url='/IFaceSuperService_ay_new/iface/rest/queryZybxmx';
+            var data={
+            		channelcode : 'channeltype',
+            		//aac002:'4105021951104200023'
+            		sfzhm:'410503195606301015'
+            		//qsny:'2015/01/01 00:00:00',
+            		//zzny:'2016/01/01 00:00:00'
+            }
+            $.ajax({
+                type:'post',
+                url:url,
+                data:JSON.stringify(data),
+                contentType:'application/json; charset=UTF-8',
+                dataType:'json',
+                success:function(result){
+                    var transArray =result.data;
+                   alert(result.statusCode);
+                   
+                   
+                  
+                }
+            });
+        }
+        
+        
+    </SCRIPT>
+
+
+</head>
+<BODY>
+<input type="button" value="登陆" onclick="login();"/>
+
+<input type="button" value="个人参保信息" onclick="a();"/>
+<input type="button" value="个人缴费明细信息" onclick="test1();"/>
+
+<input type="button" value="缴费比例" onclick="test32();"/>
+<input type="button" value="单位缴纳部分" onclick="test33();"/>
+
+<input type="button" value="医疗个人账户余额" onclick="test31();"/>
+
+<input type="button" value="医疗个人账户详情" onclick="test2();"/>
+
+<!--<input type="button" value="养老缴费" onclick="yljf()"/>
+<input type="button" value="失业缴费" onclick="syjf()"/>
+<input type="button" value="工伤缴费" onclick="gsjf()"/>
+<input type="button" value="养老保险参保信息查询" onclick="ylcbxxxc()"/>
+
+
+<input type="button" value="个人生育历年缴费基数信息" onclick="a1()"/>
+<input type="button" value="个人生育历年缴费明细信息" onclick="test11()"/>
+
+<input type="button" value="个人生育缴费合计信息" onclick="test321()"/>
+
+<input type="button" value="养老待遇代发信息" onclick="yldydf()"/>
+<input type="button" value="养老保险个人月账户信息" onclick="ylgryzh()"/>
+<input type="button" value="失业保险缴费记录明细" onclick="syjfmx()"/>
+<input type="button" value="失业保险待遇查询" onclick="sydy()"/>
+
+
+<input type="button" value="养老保险缴费信息查询" onclick="syjf1()"/>
+<input type="button" value="工伤保险列表查询" onclick="syjf2()"/>
+<input type="button" value="失业保险列表查询" onclick="syjf3()"/>
+<input type="button" value="个人医疗历年缴费明细统计合计信息" onclick="test123456();"/>
+<input type="button" value="个人生育历年缴费明细统计合计信息" onclick="test1234567();"/>
+<input type="button" value="养老保险缴费统计信息查询" onclick="syjfSum()"/>
+
+<input type="button" value="个人住院记录查询接口" onclick="syjfSum1()"/>
+
+<input type="button" value="测试bootsarp" onclick="syjf4()"/>-->
+
+</BODY>
+</html>

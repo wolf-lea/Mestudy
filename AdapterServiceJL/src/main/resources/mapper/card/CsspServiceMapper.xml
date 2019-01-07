@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.card.service.impl.CsspServiceImpl">
+    <!--社保卡申请-查询之前是否申请过社保卡（最新记录）-->
+    <select id="isExistApplyPersonInfo" parameterType="java.util.Map"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+        select * from (
+        SELECT p.PERSON_ID as personId,p.sfzh as sfzh , p.xm as xm,
+        t.APPLY_ID as applyId,t.CREATE_TIME as createTime,t.PHOTO_BUZ_ID as photoBuzId,
+        t.isupload as isUpload,t.upload_num as uploadNum
+        FROM T_YTH_BASIC_PERSON_INFO p
+        left join T_YTH_APPLYCARD_INFO t
+        on p.PERSON_ID=t.PERSON_ID
+        where p.sfzh = #{sfzh}
+        <if test="xm != null and xm != ''">
+            AND p.xm = #{xm}
+        </if>
+        order by createTime desc
+        ) where   rownum = 1
+    </select>
+
+    <!--社保卡申请-存入社保卡申请领卡地址表-->
+    <insert id="insertCardApplyAddr"
+		parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+        <selectKey resultType="long" keyProperty="applyAddrId" order="BEFORE">
+            select T_YTH_APPLYCARD_ADDRESS_ID_SEQ.nextVal as applyAddrId from dual
+        </selectKey>
+		INSERT INTO T_YTH_APPLYCARD_ADDRESS(
+        applyaddr_id,addr_type,card_address,card_address_short,addr_org_code,addr_phone,addressee,create_time
+        )
+        VALUES
+        (#{applyAddrId},#{addrType},#{cardAddress},#{cardAddressShort},#{addrOrgCode},#{addrPhone},#{addressee},sysdate
+        )
+	</insert>
+    <!--社保卡申请-存入社保卡申请信息表-->
+    <insert id="insertCardApplyInfo"
+		parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+        <selectKey resultType="long" keyProperty="applyId" order="BEFORE">
+            select T_YTH_APPLYCARD_INFO_ID_SEQ.nextVal as applyId from dual
+        </selectKey>
+		INSERT INTO T_YTH_APPLYCARD_INFO (
+        apply_id,person_id,name_pinyin,cert_type,cert_issuing_org,cert_validity,is_foreigner,address,phone,mobile,
+        persontype,personstatus,accountproties,zipcode,guoji,company_name,company_no,
+        uploadtime,isupload,scann_photo,deviceid,photosource,photo_buz_id,picup_id,picdown_id,
+        signphoto_id,bankname,bankcode,agentcertno,agaent_phone,agentcerttype,remark,create_time,
+        update_time,upload_num,applyaddr_id,agent_name,AAB301,distinct_code,org_code,accountphoto_id
+        )
+        VALUES
+        (#{applyId},#{personId},#{namePinyin},#{certType},#{certIssuingOrg},#{certValidity},#{isForeigner},#{address},#{phone},#{mobile},
+        #{personType},#{personStatus},#{accountProties},#{zipCode},#{guoji},#{companyName},#{companyNo},
+        to_date(#{uploadtime},'yyyy-mm-dd hh24:mi:ss'),#{isUpload},#{scannPhoto}, #{deviceid},#{photoSource},#{photoBuzId},#{picupId},#{picdownId},
+        #{signphotoId}, #{bankName},#{bankCode},#{agentCertNo},#{agentPhone},#{agentCertType},#{remark},sysdate,sysdate,#{uploadNum},#{applyAddrId},
+        #{agentName},'220200',#{distinctCode},#{orgCode},#{accountphotoId}
+        )
+	</insert>
+	
+	<select id="queryUploadData" parameterType="java.util.Map"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+        SELECT p.person_id as personId,p.xm,p.sfzh,p.sex,p.nation,p.sbkh,p.birthday,p.domicile,
+        t.*,a.addr_type,a.card_address,a.card_address_short,a.addr_org_code,a.addr_phone,a.addressee
+        FROM T_YTH_APPLYCARD_INFO t
+        left join T_YTH_APPLYCARD_ADDRESS a on t.applyaddr_id =a.applyaddr_id,
+        T_YTH_BASIC_PERSON_INFO p,T_YTH_PICTURE_BUS b
+        where p.person_id=t.person_id and t.PHOTO_BUZ_ID=b.pic_Id and b.pic_status='01' and  t.isupload = 'N'
+        <if test="uploadNum !=null and uploadNum !='' and uploadNum!=0">
+            and t.UPLOAD_NUM  &lt; #{uploadNum}
+        </if>
+        order by t.apply_id desc
+    </select>
+
+    <!--社保卡申请-更改社保卡申请信息表-->
+	<update id="updateCardApplyInfo" parameterType="java.util.Map">
+		UPDATE T_YTH_APPLYCARD_INFO SET UPDATE_TIME=sysdate,uploadtime = sysdate
+        <if test="isUpload !=null and isUpload !=''">,isupload=#{isUpload}</if>
+        <if test="uploadNum !=null and uploadNum !='' and uploadNum!=0">,UPLOAD_NUM=#{uploadNum}</if>
+        WHERE person_id = #{personId}
+	</update>
+	
+	 <!--(演示)社保卡申请-制卡信息列表-->
+	<select id="queryUploadDataList" parameterType="java.util.Map"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+		<!--
+        SELECT p.person_id as personId,p.xm,p.sfzh,p.sbkh,t.isupload as isUpload,
+        t.apply_id as applyId, t.photo_buz_id as photoBuzId
+        FROM T_YTH_APPLYCARD_INFO t
+        left join T_YTH_APPLYCARD_ADDRESS a 
+        on t.applyaddr_id =a.applyaddr_id,
+        T_YTH_BASIC_PERSON_INFO p,T_YTH_PICTURE_BUS b
+        where p.person_id=t.person_id 
+        and t.PHOTO_BUZ_ID=b.pic_Id and b.pic_status='01' 
+        and  t.isupload = 'N'
+        <if test="uploadNum !=null and uploadNum !='' and uploadNum!=0">
+            and t.UPLOAD_NUM  &lt; #{uploadNum}
+        </if>
+        order by t.apply_id desc
+        -->
+        SELECT p.person_id as personId,p.xm,p.sfzh,p.sbkh,p.sex,p.nation,t.isupload as isUpload,
+        t.apply_id as applyId, t.photo_buz_id as photoBuzId，p.nation,p.sex
+        FROM T_YTH_APPLYCARD_INFO t
+        left join T_YTH_APPLYCARD_ADDRESS a 
+        on t.applyaddr_id =a.applyaddr_id,
+        T_YTH_BASIC_PERSON_INFO p,T_YTH_PICTURE_BUS b
+        where p.person_id=t.person_id 
+        and t.PHOTO_BUZ_ID=b.pic_Id and b.pic_status='01' 
+        and t.apply_id in ( 
+            select applyid from (  
+              select max(apply_id) applyid,person_id as personid 
+              from t_yth_applycard_info t
+              where isupload='N'
+              <if test="uploadNum !=null and uploadNum !='' and uploadNum!=0">
+            	and t.UPLOAD_NUM  &lt; #{uploadNum}
+        	  </if>
+              group by person_id
+            )
+        ) order by t.apply_id desc
+    </select>
+	
+	 <!--(演示)社保卡申请-制卡回传状态-->
+	<update id="updateCardApplyStatus" parameterType="java.util.Map">
+		<!--
+		UPDATE T_YTH_APPLYCARD_INFO SET UPDATE_TIME=sysdate,uploadtime = sysdate
+        <if test="isUpload !=null and isUpload !=''">,isupload=#{isUpload}</if>
+        <if test="uploadNum !=null and uploadNum !='' and uploadNum!=0">,UPLOAD_NUM=#{uploadNum}</if>
+        WHERE apply_id = #{applyId}
+        -->
+		UPDATE T_YTH_APPLYCARD_INFO SET UPDATE_TIME=sysdate
+		       ,uploadtime = sysdate
+		       <if test="isUpload !=null and isUpload !=''">,isupload=#{isUpload}</if>
+		       <if test="uploadNum !=null and uploadNum !='' and uploadNum!=0">,UPLOAD_NUM=#{uploadNum}</if>
+		       WHERE apply_id in (select apply_id from t_yth_applycard_info t where person_id in (
+													select person_id from t_yth_applycard_info t where apply_id=#{applyId} ) 
+				and isupload='N')
+	</update>
+	
+	 <!--(演示)社保卡申请-制卡信息列表-->
+	<select id="queryPersonInfo" parameterType="java.util.Map"
+		resultType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+       select apply_id as applyid, bpi.xm,bpi.sfzh from t_yth_applycard_info t left join T_YTH_BASIC_PERSON_INFO bpi
+		on t.person_id=bpi.person_id 
+		 where t.apply_id=#{applyId}
+    </select>
+
+    <!-- 查询领卡信息-->
+    <select id="cardGetMssage" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardAccomplishVO">
+        select p.sfzh,p.xm,a.addr_type,a.card_address,a.card_address_short,a.addr_phone,a.addressee,a.expressage
+        from T_YTH_APPLYCARD_ADDRESS a ,T_YTH_BASIC_PERSON_INFO p,T_YTH_APPLYCARD_INFO t where a.applyaddr_id = (select max(t.applyaddr_id) as applyaddr_id
+        from T_YTH_APPLYCARD_INFO t ,T_YTH_BASIC_PERSON_INFO p
+        where t.person_id=p.person_id and p.sfzh=#{sfzh})
+        and t.person_id=p.person_id and t .applyaddr_id=a.applyaddr_id
+        and p.sfzh=#{sfzh} and p.xm=#{xm}
+    </select>
+
+    <!-- 保存申领原始照片与处理后照片的关系 -->
+    <insert id="insertApplyPic" parameterType="java.util.Map">
+        <selectKey resultType="long" keyProperty="tem_id" order="BEFORE">
+            select T_YTH_PER_PIC_TEM_ID_SEQ.nextVal as tem_id from dual
+        </selectKey>
+        INSERT INTO T_YTH_PER_PIC_TEM (TEM_ID,SFZH,XM,PIC_ID,PIC_STATUS,PIC_MESSAGE,CREATE_TIME,per_pic_id) VALUES(#{tem_id},#{sfzh},#{xm},#{pic_id},#{pic_status},#{message},sysdate,#{per_pic_id})
+    </insert>
+    <!-- 社保卡申请 申请详情查询 -->
+    <select id="getApplyCardInfoById" parameterType="java.util.Map"
+    	resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CsspApplyInfoVo">
+    	  select apply_id  as applyId,a.name_pinyin  as namePinyin,p.sfzh as sfzh,p.xm as xm,
+      cert_issuing_org as certIssuingOrg,cert_validity  as certValidity,is_foreigner   as isForeigner,
+      address   as address, a.phone ,mobile ,persontype as personType, personstatus as personStatus,
+      accountproties as accountProties,zipcode as zipCode, guoji  ,company_name  as companyName,company_no  as companyNo,
+      to_char(uploadtime ,'yyyy-mm-dd hh24:mi:ss') as uploadTime, isupload   as isUpload, upload_num   as uploadNum,
+      scann_photo as scannPhoto, deviceid  as deviceId, photosource  as photoSource, photo_buz_id as photoBuzId,
+      picup_id as picupId, picdown_id as picdownId, signphoto_id as signphotoId,bankname  as bankName,
+      bankcode   as bankCode,agentcertno  as agentCertNo, agaent_phone  as agentPhone, agentcerttype as agentCertType,
+      remark , a.create_time as createTime, a.update_time  as updateTime, cert_type as certType ,d.addr_type as addrType,
+      d.card_address as cardAddress,d.card_address_short as cardAddressShort ,d.addr_org_code as addrOrgCode , d.addr_phone as addrPhone , d.addressee as addressee , 
+      distinct_id as distinctId ,p.domicile ,p.nation,p.sex,p.birthday 
+      from t_yth_applycard_info  a left join t_yth_applycard_address d on a.applyaddr_id = d.applyaddr_id left join t_yth_basic_person_info p on a.person_id = p.person_id 
+	  where apply_id = #{applyId}
+    </select>
+    
+    <!-- 查询是否在荣科进行社保卡数据采集-->
+    <select id="isExitRK" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardInfoVO">
+        select t.aac002 as sfzh,t.aac003 as xm from collections1 t where 1=1 
+        <if test="sfzh != null and sfzh != ''">
+            and t.aac002 = #{sfzh}
+        </if>
+        
+    </select>
+    
+    <!-- 查询是否在省卡管存在社保卡采集数据-->
+    <select id="isExitSKG" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardInfoVO">
+        select t.aac002 as sfzh from ysc_kg t where 1=1 
+        <if test="sfzh != null and sfzh != ''">
+            and t.aac002 = #{sfzh}
+        </if>
+    </select>
+    
+    <!-- 查询是否在德生表ds_collections存在社保卡采集数据-->
+    <select id="isExitDS" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardInfoVO">
+        select t.社会保障号 as sfzh from ds_collections t where 1=1 
+        <if test="sfzh != null and sfzh != ''">
+            and t.社会保障号 = #{sfzh}
+        </if>
+    </select>
+    
+     <!-- 查询吉林卡管数据字典-->
+    <select id="getDicList" parameterType="com.tecsun.sisp.adapter.modules.common.entity.request.SecQueryBean"
+            resultType="com.tecsun.sisp.adapter.modules.card.entity.response.CardDictVO">
+       select * from dics t where  1=1
+        <if test="dicType != null and dicType != ''">
+            and DICTYPE=#{dicType}
+        </if>
+    </select>
+    
+    
+    <!--社保卡申请-吉林项目-采集信息存到DS数据库数据表DS_COLLECTIONS-->
+    <insert id="insertCardApplyInfoToCollect"
+		parameterType="com.tecsun.sisp.adapter.modules.card.entity.request.CsspApplyBean">
+		INSERT INTO DS_COLLECTIONS (国籍 ,证件类型 , 证件有效期 , 社会保障号,姓名 ,性别 ,民族 ,出生日期 ,人员状态 ,户口性质 ,
+                            户口地址 ,联系电话 , 联系手机,通讯地址,邮政编码 ,单位编号,单位名称 ,监护人证件类型,监护人证号,监护人姓名 ,服务银行,AAB301,相片 ,
+         ADDTIME,TYPE,人员类别,区县编码,网点编码,身份证正面照片,身份证反面照片, 未成年人户口本照片,渠道类型
+        )
+        VALUES
+        (#{guoji},#{certType},#{certValidity},#{sfzh},#{xm},#{sex},#{nation},#{birthday},#{personStatus},
+        #{accountProties},#{domicile},#{phone},#{mobile},#{address},#{zipCode},#{companyNo},#{companyName},
+        #{agentCertType},#{agentCertNo},#{agentName},#{bankCode},'220200',#{photo64Byte},sysdate,'0',
+        #{personType},#{distinctCode},#{orgCode},#{idcard64ByteUp},#{idcard64ByteDown},#{account64Byte},#{channelcode}
+        )
+	</insert>
+    
+    
+    
+    
+    
+    
+  
+    
+</mapper>

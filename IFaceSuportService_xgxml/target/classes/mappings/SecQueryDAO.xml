@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.iface.server.model.dao.SecQueryDAO">
+
+    <select id="getTsjbxxVO" parameterType="com.tecsun.sisp.iface.common.vo.card.TsjbxxVO" resultType="com.tecsun.sisp.iface.common.vo.card.TsjbxxVO">
+        select * from ts_v_jbxx j where j.GRBH=(
+        select max(grbh) from ts_v_jbxx s where s.sfzh=#{sfzh}
+        <if test="xm != null and xm != ''">
+            and s.xm=#{xm}
+        </if>
+        )
+    </select>
+
+    <update id="changePhoneNo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean">
+        update t_az01b set mobile=#{newPhoneNo} where cernum=#{id} and name=#{name}
+    </update>
+
+    <select id="getPersonSureInfo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsgrcbxxVO">
+        select * from ts_v_bp_grcbxx where grbh=#{grbh,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getPersonPay" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsgrjfjsxxVO">
+        select * from ts_v_bp_grjfjsxx where grbh=#{grbh,jdbcType=VARCHAR} order by ksny desc
+    </select>
+
+    <select id="getPersonPesionPay" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsgrjfxxVO">
+        select * from ts_v_bp_grjfxx where grbh=#{grbh,jdbcType=VARCHAR} order by fkssq desc
+    </select>
+    <select id="getHurtInfo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsgsbxjbxxVO">
+        select * from ts_v_bp_gsbxjbxx where grbh=#{grbh,jdbcType=VARCHAR} order by cbsj desc
+    </select>
+    <select id="getLoseFee" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TslybxjbxxVO">
+        select * from ts_v_bp_lybxjbxx where grbh=#{grbh,jdbcType=VARCHAR} order by ksny desc
+    </select>
+    <select id="getHealthFee" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsmtbxfyjsxxVO">
+        select * from ts_v_bp_mtbxfyjsxx where grbh=#{grbh,jdbcType=VARCHAR} order by year desc
+    </select>
+    <select id="getHealthAccount" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsmtbxgrjbxxVO">
+        select * from ts_v_bp_mtbxgrjbxx where grbh=#{grbh,jdbcType=VARCHAR} order by jfnx desc
+    </select>
+    <select id="getHealthPay" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsmtbxgrjfmxVO">
+        select * from ts_v_bp_mtbxgrjfmx where grbh=#{grbh,jdbcType=VARCHAR} order by jfny desc
+    </select>
+    <select id="getBirthInfo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean"  resultType="com.tecsun.sisp.iface.common.vo.card.TssybxjbxxVO">
+        select * from ts_v_bp_sybxjbxx where grbh=#{grbh,jdbcType=VARCHAR} order by cbsj desc
+    </select>
+    <select id="getLosePay" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean"  resultType="com.tecsun.sisp.iface.common.vo.card.TssydyffxxVO">
+        select * from ts_v_bp_sydyffxx where grbh=#{grbh,jdbcType=VARCHAR} order by jsrq desc
+    </select>
+    <select id="getPesionTreatment" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsylbxgrjfmxVO">
+        select * from ts_v_bp_ylbxgrjfmx where grbh=#{grbh,jdbcType=VARCHAR} order by jfny desc
+    </select>
+    <select id="getPesionInfo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean"  resultType="com.tecsun.sisp.iface.common.vo.card.TsylbxjbxxVO">
+        select * from ts_v_bp_ylbxjbxx where grbh=#{grbh,jdbcType=VARCHAR} order by nd desc
+    </select>
+    <select id="getQuitPay" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean"  resultType="com.tecsun.sisp.iface.common.vo.card.TsylbxltxrydyxxVO">
+        select * from ts_v_bp_ylbxltxrydyxx where grbh=#{grbh,jdbcType=VARCHAR} order by ffny desc
+    </select>
+    <select id="getPesionPay" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsyldyffxxVO">
+        select * from ts_v_bp_yldyffxx where grbh=#{grbh,jdbcType=VARCHAR} order by jsrq desc
+    </select>
+    <select id="getPesionYearAccount" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsylgrzhxxVO">
+        select * from ts_v_bp_ylgrzhxx where grbh=#{grbh,jdbcType=VARCHAR} order by nd desc
+    </select>
+    <select id="getPesionMouthAccount" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsylyzhxxVO">
+        select * from ts_v_bp_ylyzhxx where grbh=#{grbh,jdbcType=VARCHAR} order by jzny desc
+    </select>
+
+    <!-- 查询五险的SQL -->
+    <select id="getPersonInsure" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+	select c.AAA103 as jjly, a.aae140 as xzlx,a.aae210 as kx ,a.aae003 as ssq, a.aac150 jfjs,
+	a.aac123 as sjje,to_char(a.aab191,'yyyy/mm/dd') as dzrq,
+	b.aac003 as xm ,b.aac002 as sfzh,
+	(select d.AAA103 from hbsimis_xgjb.AA10 d where d.aaa100='AAB034' and a.aab034= d.AAA102) as cbdq
+	from hbsimis_xgjb.ac20 a,hbsimis_xgjb.ac01 b,hbsimis_xgjb.AA10 c
+	where a.aac001=b.aac001
+	and a.aae216 = c.AAA102
+	and c.AAA100='AAE216'
+	and b.aac031!='3'
+	and a.aae140 in(${aae140}) and a.aae114 ='1' and b.aac002=#{aac002} order
+	by a.aae003 desc
+    </select>
+  
+    <!-- 查询五险各险种合计的SQL -->
+      <select id="getInsureSum" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+	
+	select distinct b.aae036 as jbrq,b.aac008 as ryzt,b.akc021 as yblx,
+	(select d.aaa103 as grsf from hbsimis_xgjb.AA10 d where aaa100='AAC012' and aaa102=b.aac012) as grsf,
+	
+	b.aac004 as xb,
+	a.aae210 as kx,
+	b.aac003 as xm,
+	b.aac002 as sfzh,
+	b.aac031 as cbzt,
+	a.aae041 as jfksrq,
+	a.aae042 as jfzzrq,
+	(select c.aab004 as grsf from hbsimis_xgjb.ab01 c where b.aab001 = c.aab001) as dwmc
+	from hbsimis_xgjb.ac20 a, hbsimis_xgjb.ac01 b
+	where a.aac001 = b.aac001
+	<if test="aae140 != null and aae140 != ''">
+		and a.aae140 in(${aae140})
+	</if>
+	<if test="aac001 != null and aac001 != ''">
+		and b.aac001=#{aac001}
+	</if>
+	and a.aae114 = '1'
+	and b.aac002 = #{aac002}
+	and b.aac031!='3'
+	order by b.aae036 desc
+    </select>
+    
+    <!--单位或个人缴费合计  -->
+      <select id="getPaySum" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+	select nvl(sum(a.aac123),0) as sjje,a.aae210 as kx,a.aae216 as jjly
+	from hbsimis_xgjb.ac20 a, hbsimis_xgjb.ac01 b
+	where a.aac001 = b.aac001
+	and a.aae140 in(${aae140})
+	and a.aae114 = '1'
+	and b.aac031!='3'
+	and b.aac002 = #{aac002}
+	group by a.aae210,a.aae216
+    </select>
+
+    <!--医疗帐户明细  -->
+      <select id="getHealthAcountList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+	select ylje,ylrq,yllx,yldd from (
+	select a.akc255 as ylje,
+	to_char(a.aae040, 'yyyy/mm/dd') as ylrq,
+	'消费' as yllx,
+	c.akb021 as yldd
+	from hbsimis_xgjb.kc24 a, hbsimis_xgjb.ac01 b, hbsimis_xgjb.kb01 c
+	where a.aac001 = b.aac001
+	and a.aae100 = '1'
+	and a.akb020 = c.akb020
+	and
+	b.aac002 = #{aac002}
+	union all
+	select sum(b.aac130) as ylje,
+	to_char(max(b.aab193), 'yyyy/mm/dd') as ylrq,
+	'划入' as yllx,
+	'结算中心' as
+	yldd
+	from hbsimis_xgjb.ac20 b, hbsimis_xgjb.ac01 c
+	where 1 = 1
+	and
+	b.aac001 = c.aac001
+	and c.aac002 = #{aac002}
+	and b.aac008 = '11'
+	and
+	b.aae140 in ('31', '32')
+	and b.aab193>to_date('2012-10-01','yyyy-mm-dd')
+	group by b.aae003
+	) d order by ylrq desc
+    </select>
+    
+      <select id="getylAccountYe" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+        select nvl(b.akc087,0) as ylye  from hbsimis_xgjb.kc04 b where b.aac001 in(${aac001}) and b.akc095 is not  null order by b.akc095 desc
+    </select>
+    
+    <!-- 五险：根据身份证号查询出对应的所有个人编号 -->
+        <select id="getGrbhList" parameterType="com.tecsun.sisp.iface.common.vo.card.TsjbxxVO" resultType="com.tecsun.sisp.iface.common.vo.card.TsjbxxVO">
+        select j.GRBH  from ts_v_jbxx j where j.GRBH in(
+        select grbh from ts_v_jbxx s where s.sfzh=#{sfzh}
+        )
+    </select>
+    
+    <!--  //系统内部调用 根据用户名，身份证获取用户唯一 个人编号 -->
+     <select id="getPersonGrbh" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+            select nvl(a.aac001,0) as grbh  from  hbsimis_xgjb.ac01  a where a.aac002= #{aac002} and a.bac022='0' order  by a.aae036 desc
+    </select>
+    
+    
+            <!-- 获取城镇职工的在用的个人编码 -->
+     <select id="getQuitPayCode" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+		 select nvl(a.aac001,0) as grbh  from  hbsimis_xgjb.ac01  a,hbsimis_xgjb.ic10 c 
+		 where a.aac001 =c.aac001 and  a.aac002= #{aac002}  order  by a.aae036 desc
+    </select>
+    
+        <!-- 城镇职工退休列表 -->
+     <select id="getQuitPayList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+		select a.aae080 as sfny ,a.aic263 as ffje,
+		(select d.AAA103 from hbsimis_xgjb.AA10 d where d.aaa100='AAE016' and
+		a.aae016= d.aaa102) as ffjg,
+		a.aae010 as ffzh from hbsimis_xgjb.ic15 a where a.aac001=#{aac001}
+		order by  a.aae080 desc
+    </select>
+    
+    
+     <!-- 城镇职工退休列表 -->
+     <select id="getQuitPaySum" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+		select  nvl(sum(a.aic263),0) as ffjehj,max(a.aac003)as xm,max(a.aab004) as dwmc from hbsimis_xgjb.ic15 a where a.aac001=#{aac001}
+
+    </select>
+    
+    
+     <select id="getCheckPersonGrbh" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+            select nvl(a.aac001,0) as grbh  from  hbsimis_xgjb.ac01  a where a.aac002= #{aac002}  order  by a.aae036 desc
+    </select>
+
+    <!-- 五险：查询所有在参保个人编号-->
+    <select id="getPersonCount" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+        select a.aac003 as xm,a.aac001 as grbh  from  hbsimis_xgjb.ac01  a where a.aac002=#{aac002} and a.aac031!='3'
+    </select>
+    <!-- 五险：参保个人信息-->
+    <select id="getPersonInfo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+	select distinct
+	(select d.aaa103 as grsf from hbsimis_xgjb.AA10 d where aaa100='AAC012' and
+	aaa102=b.aac012) as grsf,
+	b.aac004 as xb,
+	b.aac003 as xm,
+	b.aac002 as sfzh,
+	b.aac007 as cjgzsj,
+	b.aac005 as mz,
+	b.aac001 as grbh,
+	b.aac008 as ryzt,
+	(select c.aab004 as grsf from hbsimis_xgjb.ab01 c where b.aab001 = c.aab001)
+	as dwmc
+	from hbsimis_xgjb.ac01 b where b.aac002 =#{aac002} and b.aac031!='3' order
+	by b.aae036 desc
+    </select>
+
+    <!--五险：查询参保的险种  -->
+    <select id="getPersonCvrgInfo" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TsInsuranceVO">
+    select a.aac001 as grbh, a.aae140 as xzlx, a.aac031 as cbzt,a.aae042 as zzny,a.aae036 as jbsj,
+    (select min(f.aae041) from hbsimis_xgjb.ac02 f  where f.aac001 = a.aac001 and a.aae140 = f.aae140) as ksny,
+    (select c.aab004 as grsf from hbsimis_xgjb.ab01 c where a.aab001 = c.aab001) as dwmc
+    from hbsimis_xgjb.ac02 a
+    where a.aac001 =#{aac001}  and a.aac031 != '3'
+    <if test="aae140 != null and aae140 != ''">
+        and a.aae140 in(${aae140})
+    </if>
+    and a.aae041 = (select max(aae041) from hbsimis_xgjb.ac02 b where a.aac001 = b.aac001 and a.aae140 = b.aae140)
+    order by xzlx
+    </select>
+
+
+    <!-- 工伤认定信息查询 getInjuryIdenList-->
+    <select id="getInjuryIdenList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TswxaddVO">
+	select a.aac001 as grbh, to_char(a.alc020,'yyyy/mm/dd') as gsfssj,to_char(a.alc031,'yyyy/mm/dd') as rdrq,a.alc023 as shdd,
+	(select c.aaa103 from hbsimis_xgjb.AA10 c where c.aaa100='ALC022' and c.AAA102=a.alc022) as shbw,
+	(select d.aaa103 from hbsimis_xgjb.AA10 d where d.aaa100='ALC029' and d.aaa102=a.alc029) as rdjl
+	from hbsimis_xgjb.lc01 a,hbsimis_xgjb.ac01 b
+	where a.aac001=b.aac001 and b.aac031!='3' and b.aac002=#{aac002}
+	order by a.alc020 desc
+    </select>
+
+    <!-- 工伤定期待遇信息 getInjuryTreatmentList-->
+    <select id="getInjuryTreatmentList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TswxaddVO">
+	select a.aac001 as grbh,to_char(a.alc020,'yyyy/mm/dd') as sfssj,a.aae041 as ksny,a.aae042 as zzny,a.alc070 gsdyje,
+	(select nvl(sum(c.alc070),0) as zje from hbsimis_xgjb.lc04 c where c.aac001=b.aac001)as zje
+	from hbsimis_xgjb.lc04 a,hbsimis_xgjb.ac01 b
+	where a.aac001=b.aac001 and b.aac031!='3' and b.aac002=#{aac002}
+	order by a.aae041 desc
+    </select>
+
+    <!-- 劳动能力鉴定信息 getWorkAbilityCheckList-->
+    <select id="getWorkAbilityCheckList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TswxaddVO">
+	select to_char(a.alc034,'yyyy/mm/dd') as scdjjdrq, to_char(a.alc035,'yyyy/mm/dd') as hldjjdrq,
+	(select c.aaa103 from hbsimis_xgjb.aa10 c where c.aaa100='ALA040' and c.aaa102=a.ala040) as scdj,
+	(select d.aaa103 from hbsimis_xgjb.aa10 d where d.aaa100='ALC060' and d.aaa102=a.alc060) as hldj
+	from hbsimis_xgjb.lc01 a,hbsimis_xgjb.ac01 b
+	where a.aac001=b.aac001 and b.aac031!='3' and b.aac002=#{aac002}
+	order by a.alc034 desc
+    </select>
+
+    <!-- 工伤医疗费结算记录查询 getInjuryMedicalList-->
+    <select id="getInjuryMedicalList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TswxaddVO">
+	select a.aac001 as grbh,a.aae002 as jsq,a.alc067 as shje,a.alc070 as gsdyje,
+	(select c.aaa103 from hbsimis_xgjb.AA10 c where c.aaa100='ALA041' and c.aaa102=a.ala041)as dylb,
+	(select d.aaa103 from hbsimis_xgjb.AA10 d where d.aaa100='AAE117' and d.aaa102=a.aae117)as zfzt
+	from hbsimis_xgjb.lc05 a,hbsimis_xgjb.ac01 b
+	where a.aac001=b.aac001 and b.aac031!='3' and b.aac002=#{aac002}
+	order by a.aae002 desc
+    </select>
+
+    <!-- 生育保险待遇信息查询 getFertilityTreatList-->
+    <select id="getFertilityTreatList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TswxaddVO">
+	select a.aac001 as grbh,to_char(a.amc020,'yyyy/mm/dd') as syfssj,a.amc051 as sybxdyje,a.bmc003 as sbfy,
+	(select c.aaa103 from hbsimis_xgjb.AA10 c where c.aaa100='AMC050' and c.aaa102=a.amc050)as sybxdylb,
+	(select d.aaa103 from hbsimis_xgjb.AA10 d where d.aaa100='AAE117' and d.aaa102=a.aae117)as zfzt
+	from hbsimis_xgjb.mc02 a,hbsimis_xgjb.ac01 b
+	where a.aac001=b.aac001 and b.aac031!='3' and b.aac002=#{aac002}
+	order by a.amc020 desc
+    </select>
+
+    <!-- 生育医疗费结算信息查询 getFertilityMedicalList-->
+    <select id="getFertilityMedicalList" parameterType="com.tecsun.sisp.iface.common.vo.SecQueryBean" resultType="com.tecsun.sisp.iface.common.vo.card.TswxaddVO">
+       select a.aac001 as grbh,to_char( a.AMC020,'yyyy/mm/dd' )as syfssj,a.AMC500 as ylffsze,a.AMC501 as bxje,a.AAE010 as yhzh,
+      (select c.aaa103 from hbsimis_xgjb.AA10 c where c.aaa100='AAE116' and c.aaa102=a.AAE116)as zfzt
+      from hbsimis_xgjb.MC01 a,hbsimis_xgjb.ac01 b
+      where a.aac001=b.aac001 and b.aac031!='3' and b.aac002=#{aac002}
+      order by a.amc020 desc
+    </select>
+
+</mapper>

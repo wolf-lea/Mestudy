@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fakamanagement.modules.service.impl.replacement.ReplaceStatisticsServiceImpl">
+
+    <!--预制卡发卡统计-->
+    <select id="getReplaceCardCount" parameterType="com.tecsun.sisp.fakamanagement.modules.entity.param.replacement.ReplaceStatisticsBean"
+            resultType="com.tecsun.sisp.fakamanagement.modules.entity.result.replacement.ReplaceStatisticsVO">
+        select tt.*,(tt.cardCount-tt.fakaCount-tt.badCount)as surplusCount from(
+        select o.name,t.rkwd,count(1) as cardCount,
+        (select count(1) from replacecard_detail where status='01' and rkwd=t.rkwd
+        <if test="beginTime!=null and beginTime!=''">
+            and create_time &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and create_time &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        )as fakaCount,
+        (select count(1) from replacecard_detail where status='02' and rkwd=t.rkwd
+        <if test="beginTime!=null and beginTime!=''">
+            and create_time &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and create_time &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        )as badCount
+        from replacecard_detail t,sisp_public.t_org o
+        where t.rkwd=o.org_code
+        <if test="distinctId!=null and distinctId!=''">
+            and o.distinct_id=#{distinctId}
+        </if>
+        <if test="bank!=null and bank!=''">
+            and t.bank=#{bank}
+        </if>
+        <if test="rkwd!=null and rkwd!=''">
+            and t.rkwd=#{rkwd}
+        </if>
+        <if test="beginTime!=null and beginTime!=''">
+            and t.create_time &gt;= to_date(#{beginTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and t.create_time &lt;= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        group by o.name,t.rkwd
+        )tt
+    </select>
+
+
+
+
+</mapper>

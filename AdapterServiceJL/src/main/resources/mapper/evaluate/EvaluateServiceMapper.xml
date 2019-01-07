@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.evaluate.service.impl.ContentServiceImpl">
+
+    <!-- 获取评价内容-->
+    <select id="selectContent" parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.ContentBean"
+            resultType="com.tecsun.sisp.adapter.modules.evaluate.entity.response.ContentVo">
+        select c.* from T_YTH_EVALUATE_CONTENT c
+        where c.content_id in(
+        select sc.content_id from T_YTH_EVALUATE_SC sc where sc.service_code = #{serviceCode} and sc.is_use = 0)
+    </select>
+
+    <!-- 插入用户评价表-->
+    <insert id="insertEvaluate"
+            parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.EvaluateBean">
+        <selectKey resultType="long" keyProperty="evaluateId" order="AFTER">
+            select T_YTH_EVALUATE_USER_ID_SEQ.CURRVAL as evaluateId from dual
+        </selectKey>
+        insert into T_YTH_EVALUATE_USER u
+        (u.evaluate_xm,u.evaluate_sfzh,u.evaluate_phone,u.evaluate_service,u.service_number,
+        u.evaluated_xm,u.evaluated_sfzh,u.evaluated_number,u.channel_code)
+        values
+        (#{evaluateXm},#{evaluateSfzh},#{evaluatePhone},#{evaluateService},#{serviceNumber},
+        #{evaluatedXm},#{evaluatedSfzh},#{evaluatedNumber},#{channelcode})
+    </insert>
+
+    <!-- 更新用户评价表-->
+    <update id="updateEvaluate" parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.EvaluateBean">
+        UPDATE T_YTH_EVALUATE_USER u
+        SET
+        u.evaluate_xm = #{evaluateXm},u.evaluate_sfzh = #{evaluateSfzh},
+        u.evaluate_phone = #{evaluatePhone},u.evaluate_service = #{evaluateService},
+        u.service_number = #{serviceNumber},u.evaluated_xm = #{evaluatedXm},
+        u.evaluated_sfzh = #{evaluatedSfzh},u.evaluated_number = #{evaluatedNumber},
+        u.channel_code = #{channelcode},u.update_time = sysdate,
+        u.is_evaluate = '1'
+        WHERE u.service_number = #{serviceNumber}
+    </update>
+
+    <!-- 根据serviceNumber查询id-->
+    <select id="selectId" parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.EvaluateBean"
+            resultType="com.tecsun.sisp.adapter.modules.evaluate.entity.response.EvaluateVo">
+        select u.evaluate_id from T_YTH_EVALUATE_USER u where u.service_number = #{serviceNumber}
+        <if test="evaluateService != null and evaluateService !=''">
+            and evaluate_service = #{evaluateService}
+        </if>
+    </select>
+
+    <!-- 插入评价详细表-->
+    <insert id="insertEvaluateDetail"
+            parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.EvaluateDetailBean">
+        insert into T_YTH_EVALUATE_DETAIL t
+        (t.evaluate_id,t.content_id,t.evaluate_result)
+        values
+        (#{evaluateId},#{contentId},#{evaluateResult})
+    </insert>
+
+    <!-- 查询用户评价表-->
+    <select id="selectEvaluate" parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.EvaluateBean"
+            resultType="com.tecsun.sisp.adapter.modules.evaluate.entity.response.EvaluateVo">
+        select u.*,s.service_name from T_YTH_EVALUATE_USER u,T_YTH_EVALUATE_SERVICE s
+        where u.evaluate_service=s.service_code
+        and u.service_number = #{serviceNumber}
+        and u.evaluate_service = #{evaluateService}
+        order by u.create_time desc
+    </select>
+
+    <!-- 查询用户评价详细表-->
+    <select id="selectEvaluateDetail" parameterType="com.tecsun.sisp.adapter.modules.evaluate.entity.request.EvaluateBean"
+            resultType="com.tecsun.sisp.adapter.modules.evaluate.entity.response.EvaluateDetailVo">
+        select c.content_id,c.content_name,c.content_property,d.evaluate_result
+        from T_YTH_EVALUATE_DETAIL d,T_YTH_EVALUATE_CONTENT c
+        where d.content_id = c.content_id and d.evaluate_id = #{evaluateId}
+    </select>
+</mapper>
+

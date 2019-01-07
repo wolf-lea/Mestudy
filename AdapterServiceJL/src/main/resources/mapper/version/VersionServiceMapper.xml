@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.version.service.impl.VersionServiceImpl">
+
+    <!-- 查询当前版本信息 判断版本是否合法-->
+    <select id="checkVersion"
+            parameterType="com.tecsun.sisp.adapter.modules.version.entity.request.VersionBean"
+            resultType="com.tecsun.sisp.adapter.modules.version.entity.response.VersionVo">
+        select * from T_YTH_VERSIONS_RECORD t
+        where t.SORTWAER_VERSION = #{sortwareVersion} and t.APP_TYPE = #{appType}
+    </select>
+
+    <!-- 获取更新版本信息-->
+    <select id="selectVersion"
+            parameterType="com.tecsun.sisp.adapter.modules.version.entity.request.VersionBean"
+            resultType="com.tecsun.sisp.adapter.modules.version.entity.response.VersionVo">
+        select * from T_YTH_VERSIONS_RECORD t
+        WHERE t.PLAN_UPDATE_TIME &lt; (sysdate) and t.STATUS = 0 AND t.sortware_code = #{sortwareCode}
+        AND t.APP_TYPE = #{appType} AND rownum=1
+        <if test="id != 0">
+            AND t.ID = #{id}
+        </if>
+        ORDER BY t.CREATE_TIME DESC
+    </select>
+
+    <!-- 更新下载量-->
+    <update id="updateDownloadNumber"
+            parameterType="com.tecsun.sisp.adapter.modules.version.entity.request.VersionBean">
+        UPDATE T_YTH_VERSIONS_RECORD t
+        SET t.DOWNLOAD_NUMBER = t.DOWNLOAD_NUMBER + 1
+        WHERE t.ID = #{id}
+    </update>
+
+    <!-- 新增软件版本-->
+    <insert id="addVersion" parameterType="com.tecsun.sisp.adapter.modules.version.entity.response.VersionVo">
+        INSERT INTO T_YTH_VERSIONS_RECORD t
+        (t.sortware_code,t.sortware_name,t.sortware_version,t.download_link,t.APP_TYPE,
+        t.remark,t.plan_update_time,t.create_people)
+        VALUES
+        (#{sortwareCode},#{sortwareName},#{sortwareVersion},#{downloadLink},#{appType},
+        #{remark},to_date(#{planUpdateTime},'yyyy-mm-dd'),#{createPeople})
+    </insert>
+
+    <!-- 更新下载量-->
+    <update id="updateVersion"
+            parameterType="com.tecsun.sisp.adapter.modules.version.entity.response.VersionVo">
+        UPDATE T_YTH_VERSIONS_RECORD t
+        SET t.UPDATE_TIME = sysdate
+        <if test="sortwareCode != null and sortwareCode != ''">
+            ,t.sortware_code = #{sortwareCode}
+        </if>
+        <if test="sortwareName != null and sortwareName != ''">
+            ,t.sortware_name = #{sortwareName}
+        </if>
+        <if test="sortwareVersion != null and sortwareVersion != ''">
+            ,t.sortware_version = #{sortwareVersion}
+        </if>
+        <if test="downloadLink != null and downloadLink != ''">
+            ,t.download_link = #{downloadLink}
+        </if>
+        <if test="appType != null and appType != ''">
+            ,t.APP_TYPE = #{appType}
+        </if>
+        <if test="remark != null and remark != ''">
+            ,t.remark = #{remark}
+        </if>
+        <if test="planUpdateTime != null and planUpdateTime != ''">
+            ,t.plan_update_time = to_date(#{planUpdateTime},'yyyy-mm-dd')
+        </if>
+        <if test="forceUpdate != null and forceUpdate != ''">
+            ,t.force_update = #{forceUpdate}
+        </if>
+        <if test="updatePeople != null and updatePeople != ''">
+            ,t.update_people = #{updatePeople}
+        </if>
+        <if test="status != null and status != ''">
+            ,t.status = #{status}
+        </if>
+        WHERE t.ID = #{id}
+    </update>
+</mapper>

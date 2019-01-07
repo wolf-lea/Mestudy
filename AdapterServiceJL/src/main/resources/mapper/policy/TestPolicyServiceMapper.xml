@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.adapter.modules.policy.service.impl.TestPolicyServiceImpl">
+
+    <select id="getPolicyType"    resultType="com.tecsun.sisp.adapter.modules.policy.entity.response.PolicyTypeVO">
+        select policyType,policyTypeName from TEST_POLICY_TYPE t where 1=1
+        order by ORDER_NUM
+    </select>
+
+    <select id="getPolicyList"   parameterType="com.tecsun.sisp.adapter.modules.policy.entity.request.PolicyTitleBean"
+            resultType="com.tecsun.sisp.adapter.modules.policy.entity.response.PolicyTitleVO">
+        select POLICYTYPE as policyType,POLICYID as policyID,POLICYTITLE as policyTitle,DISTRICT as district,
+        POLICYCODE as policyCode,PUBLISHDATE as publishDate from TEST_POLICY_INFO t where 1=1
+        <if test="policyType!=null and policyType!=''">
+            and POLICYTYPE=#{policyType}
+        </if>
+        <if test="pulishStartDate!=null and pulishStartDate!=''">
+            and PUBLISHDATE &gt;=to_date(#{pulishStartDate},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="pulishEndDate!=null and pulishEndDate!=''">
+            and PUBLISHDATE &lt;=to_date(#{pulishEndDate},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        order by ORDER_NUM
+    </select>
+
+    <select id="getPolicyContext" parameterType="com.tecsun.sisp.adapter.modules.policy.entity.request.PolicyTitleBean"
+            resultType="com.tecsun.sisp.adapter.modules.policy.entity.response.PolicyVO">
+        select POLICYTYPE as policyType,POLICYID as policyID,POLICYTITLE as policyTitle,DISTRICT as district,
+        POLICYCODE as policyCode,PUBLISHDATE as publishDate,POLICYCONTEXT as policyContext from TEST_POLICY_INFO t where 1=1
+        and POLICYID=#{policyID}
+        <if test="policyType!=null and policyType!=''">
+            and POLICYTYPE=#{policyType}
+        </if>
+    </select>
+</mapper>
