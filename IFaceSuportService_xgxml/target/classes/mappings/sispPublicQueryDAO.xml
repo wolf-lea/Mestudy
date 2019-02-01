@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.tecsun.sisp.iface.server.model.dao_sisp_public.SispPublicQueryDAO">
-
-    <select id="getInfo" resultType="com.tecsun.sisp.iface.common.vo.cssp.UseInfoBean" parameterType="java.lang.String">
-        select  org_id, cssp_bank_id,devcode from T_DEVICE_REGIST t where equipment_no = #{deviceId}
-    </select>
-
-</mapper>
