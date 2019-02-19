@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.iface.server.model.dao_zj.ZhongJianDAO">
+
+<!-- 个人 -->
+<sql id='AUDIT_TABLE_NEXTVAL'>SEQ_T_AUDIT_TABLE_XH.Nextval</sql>
+<insert id="addBarcode" parameterType="com.tecsun.sisp.iface.common.vo.FormData">
+		insert into t_audit_table
+		<trim prefix="(" suffix=")">
+		
+			bsnum, sxbm,aac003,aac002,aac004,aae030,
+			aae031,bjzt,bz,cqzt,sjhm,jfjs,xh
+		</trim>
+		values
+		<trim prefix="(" suffix=")">
+			#{bsnum},#{sxbm},#{aac003},#{aac002},#{aac004},
+			#{aae030},#{aae031},#{bjzt},#{bz},#{cqzt},#{sjhm},#{jfjs},<include refid="AUDIT_TABLE_NEXTVAL" />
+		</trim>
+	</insert>
+	
+	
+	
+	
+	<!--  获取-->
+		<sql id="querybyAudit">
+		bsnum, sxbm,aac003,aac002,aac004,aae030,aae031,bjzt,bz,sjhm,jfjs
+		</sql>
+	<select id="querybyAuditTable" parameterType="com.tecsun.sisp.iface.common.vo.postDataRequest" resultType="com.tecsun.sisp.iface.common.vo.PostData">
+		select <include refid="querybyAudit"/>
+		 
+		from t_audit_table
+		<where>
+			<if test="bjzt!=null and  bjzt != ''">    
+           			bjzt = #{bjzt}    
+        	</if>  
+		</where>
+	</select>
+	
+	
+	<!-- 更新 -->
+	<update id="updateBjztAndBz" parameterType="com.tecsun.sisp.iface.common.vo.PostData">
+	update t_audit_table
+ 	<trim prefix="set" suffixOverrides=",">
+  		bjzt=#{bjzt},bz=#{bz}
+	 </trim>
+ 	WHERE bsnum=#{bsnum}
+	
+	</update>
+	 
+</mapper>

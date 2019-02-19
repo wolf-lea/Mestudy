@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.net.modules.dao.drafts_sisp.DraftsDAO">
+
+
+	<!-- 办理成功件查询 -->
+	<select id="findbySuccessMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean" 
+    		resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+		    	 select t.t_id,t.office_id,t.business_id,m.matter_name,t.applytime, (case when a.status='1' then '办理成功'
+ 					when a.status='2' then '办理失败' else   '正在办理' end)status
+ 					 from t_drafts t,t_matter m,t_auditing a,t_office_detailed o
+		    	<where>
+		    			status='1' and o.sfzh=#{sfzh} and t.business_id=m.m_id and  t.t_id=a.id
+						<if test="officeId !=null and officeId !='' ">and t.office_id=#{officeId}</if>
+						<if test="businessId !=null and businessId !='' ">and t.business_id=#{businessId}</if>
+						<if test="matterName !=null and matterName !='' ">and m.matter_name=#{matterName}</if>
+				</where>
+    </select>
+    
+    <!--办理 成功件查看详细需要修改-->
+    <select id="findbySuccessDetailedMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean"
+    resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+    				
+    	select o.o_id,o.sfzh,o.xm,t.t_id,t.office_id,t.business_id,m.m_id,m.matter_name,t.applytime,t.updatetime,  a.auditor,a.audit_time,a.apply_num,a.reason,a.name, (case when a.status='1' then '办理成功'
+           when a.status='2' then '办理失败' else   '正在办理' end)status
+            from t_drafts t,t_matter m,t_auditing a ,t_office_detailed o
+          where
+              status='1' and t.business_id=m.m_id and  t.t_id=a.id  and o.o_id=t.office_id and t.office_id=#{officeId}
+    </select>
+    
+    
+    <!-- 办理失败件查询-->
+	<select id="findbyFailMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean" 
+    		resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+		    	 select t.office_id,t.business_id,m.matter_name,t.applytime, (case when a.status='1' then '办理成功'
+ 					when a.status='2' then '办理失败' else   '正在办理' end)status
+ 					 from t_drafts t,t_matter m,t_auditing a,t_office_detailed o
+		    	<where>
+		    			status='2' and o.sfzh=#{sfzh} and t.business_id=m.m_id and  t.t_id=a.id
+						<if test="officeId !=null and officeId !='' ">and t.office_id=#{officeId}</if>
+						<if test="businessId !=null and businessId !='' ">and t.business_id=#{businessId}</if>
+						<if test="matterName !=null and matterName !='' ">and m.matter_name=#{matterName}</if>
+				</where>
+    </select>
+    <!-- 办理失败件查看详细接口需要修改 -->
+    <select id="findbyFailDetailedMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean"
+    resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+    	select o.o_id,o.xm,o.sfzh,t.t_id,t.office_id,t.business_id,m.m_id,m.matter_name,t.applytime,a.reason,a.auditor, a.audit_time,a.apply_num,a.name, (case when a.status='1' then '办理成功'
+           when a.status='2' then '办理失败' end)status
+            from t_drafts t,t_matter m,t_auditing a ,t_office_detailed o
+          where
+              status='2' and t.business_id=m.m_id and t.t_id=a.id and o.o_id=t.office_id and t.office_id=#{officeId}
+    </select>
+    
+    
+    <!-- 查询正在办理件 需要前端默认状态-->
+	<select id="findbyCurrentMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean" 
+    		resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+		    	  select t.office_id,t.business_id,m.matter_name,t.applytime
+           				 from t_drafts t,t_matter m,t_office_detailed o 
+		    	<where>
+		    		o.sfzh=#{sfzh} and t.business_id=m.m_id and t.state!='99' and t.t_id not in (select c.id from t_auditing c)
+						<if test="officeId !=null and officeId !='' ">and t.office_id=#{officeId}</if>
+						<if test="businessId !=null and businessId !='' ">and t.business_id=#{businessId}</if>
+						<if test="matterName !=null and matterName !='' ">and m.matter_name=#{matterName}</if>
+				</where>
+    </select>
+    	
+    
+    <!-- 正在办理件详细查询接口需要修改正在办理状态需要前端默认 -->
+     <select id="findbyCurrentDetailedMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean"
+    resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+    	select o.xm,o.sfzh,t.office_id,t.business_id,m.matter_name,t.applytime, t.remarks,t.submitter
+           
+            from t_drafts t,t_matter m,t_office_detailed o
+          where
+             t.office_id=#{officeId} and o.o_id=t.office_id and t.business_id=m.m_id and t.state!='99' and t.t_id not in (select c.id from t_auditing c)
+    </select>
+
+	  <!--草稿箱查询  -->
+    <select id="findbyDraftsMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean" 
+    		resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+		select t.*,
+		m.* ,a.reason from t_drafts t left join T_ITEM_MESSAGE m on t.business_id=m.sxbm
+		left join t_office_detailed o on t.office_id=o.o_id LEFT join T_AUDITING a on a.id=t.t_id
+		    	<where>
+					1 = 1 and t.business_id=m.sxbm and o.sfzh=#{sfzh} and t.state=#{status}
+					<if test="businessId !=null and businessId !='' ">
+						and t.business_id=#{businessId}</if>
+					<if test="matterName !=null and matterName !='' ">
+						and m.sxmc like '%'|| #{sxmc}|| '%'</if>
+					<if test="officeId !=null and officeId !='' ">
+						and t.office_id=#{officeId}</if>
+				</where>
+    </select>
+    
+    <!-- 草稿箱查看详细 -->
+     <select id="findAllDraftsMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean"
+     resultType="com.tecsun.sisp.net.modules.entity.response.BanjianVo">
+    	select t.*,
+		m.*,o.*  from t_drafts t left join T_ITEM_MESSAGE m on t.business_id=m.sxbm
+		left join t_office_detailed o on t.office_id=o.o_id
+          where
+              t.office_id=#{officeId}
+    </select>
+    <!-- 保存添加草稿 需要修改-->
+    
+    <insert id="addDraftsMessage" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean">
+		insert into t_drafts 
+		<trim prefix="(" suffix=")">
+			 t_id,remarks,submitter,office_id,business_id
+		</trim>
+		values
+		<trim prefix="(" suffix=")">
+			#{tId},#{remarks},#{submitter},#{officeId},#{businessId}
+		</trim>
+	
+	</insert>
+	<!--  加事项表-->
+	<sql id="T_MATTER_NXETVAL">T_MATTER_ID_SEQ.Nextval</sql>
+	<insert id="addTmatterMessage" parameterType="com.tecsun.sisp.net.modules.entity.response.TmatterVo">
+		insert into t_matter 
+		<trim prefix="(" suffix=")">
+			 m_id,matter_name
+		</trim>
+		values
+		<trim prefix="(" suffix=")">
+			#{mId},#{matterName}
+		</trim>
+	</insert>
+	
+	<!-- 办件详细信息添加 -->
+	<insert id="addOfficeMessage" parameterType="com.tecsun.sisp.net.modules.entity.response.OfficeVo">
+		insert into t_office_detailed 
+		<trim prefix="(" suffix=")">
+			 O_ID, XM,SFZH,SEX,PHONE,ADDRESS,PSTATUS,WORKTIME,INSURED_PLACE,INSURED_UNIT,
+			 YLBXTIME,YBTIME,DEYLTIME,FILENAME,SFCODE,SFNAME,DYCODE,DYNAME,INSUREDADDRESS,INSUREDCODE
+		</trim>
+		values
+		<trim prefix="(" suffix=")">
+			#{oId},#{xm},#{sfzh},#{sex},#{phone},#{address},#{pstatus},#{worktime},
+			#{insuredPlace},#{insuredUnit},#{ylbxtime},#{ybtime},#{deyltime},
+			#{filename},#{sfcode},#{sfname},#{dycode},#{dyname},#{insuredaddress},#{insuredcode}
+		</trim>
+	</insert>
+	
+  
+    <!--  修改草稿箱信息需要修改 办件表-->
+<update id="updateDraftsMessage" parameterType="com.tecsun.sisp.net.modules.entity.response.DraftsListVo">
+        update t_drafts
+              <trim prefix="set" suffixOverrides="," suffix="where t_id = #{tId} " >  
+
+                <if test="remarks != null and remarks != '' ">  
+                        remarks = #{remarks}
+                </if>
+          </trim>
+    </update>
+    <!--修改办件详细信息表  -->
+    <update id="updateOfficeMessage" parameterType="com.tecsun.sisp.net.modules.entity.response.OfficeVo">
+        update t_office_detailed
+              <trim prefix="set" suffixOverrides="," suffix="where o_id = #{oId} " >  
+
+                <if test="sfzh != null and sfzh != '' ">  
+                        sfzh = #{sfzh},
+                </if>
+                <if test="xm != null and xm != '' ">  
+                        xm = #{xm}
+                </if>
+          </trim>
+    </update>
+    
+    <!--  修改事项信息草稿-->
+     <update id="updateMatterMessage" parameterType="com.tecsun.sisp.net.modules.entity.response.TmatterVo">
+        update t_matter
+              <trim prefix="set" suffixOverrides="," suffix="where m_id = #{mId} " >  
+
+                <if test="matterName != null and matterName != '' ">  
+                        matter_name = #{matterName}
+                </if>
+          </trim>
+    </update>
+      <!-- 草稿信息删除 需要修改-->
+   <delete id="deleteDraftsMessage" parameterType="java.util.Map">
+   		delete from t_drafts where t_id=#{tId}
+   </delete>
+   <delete id="deleteOfficeMessage" parameterType="java.util.Map">
+   		delete from t_office_detailed where o_id=#{oId}
+   </delete>
+   <delete id="deleteMatterMessage" parameterType="com.tecsun.sisp.net.modules.entity.response.TmatterVo">
+   		delete from t_matter where m_id=#{mId}
+   </delete>
+
+	<!-- 草稿提交 审核更新公用
+    <update id="commitDraft" parameterType="com.tecsun.sisp.net.modules.entity.response.DraftsListVo">
+    	update t_drafts
+              <trim prefix="set" suffixOverrides="," suffix="where business_id = #{businessId} " >  
+                       updatetime=#{updatetime}, state = '0'
+          </trim>
+    </update>-->
+	<!-- 草稿提交 审核更新公用-->
+    <update id="commitDraft" parameterType="com.tecsun.sisp.net.modules.entity.response.DraftsListVo">
+    	update t_drafts
+              <trim prefix="set" suffixOverrides="," suffix="where office_id = #{officeId} " >
+                       updatetime=sysdate
+				  , state = '0'
+          </trim>
+    </update>
+
+    <!--办件进度查询  -->
+    <select id="queryByOfficeStatus" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean"
+    resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+    	select o.*,t.*,m.*,f.auditor,f.audit_time,
+ 		(case  when t.t_id not in (select c.id from t_auditing c) then '未处理'
+		when (select c.status from t_auditing c where c.id=t.t_id)='1' then '审核通过'
+		when (select c.status from t_auditing c where c.id=t.t_id)='2' then '审核不通过' end) status
+            from t_drafts t--t_matter m,t_office_detailed o,t_auditing f
+          full join t_matter m on t.business_id=m.m_id 
+          full join t_office_detailed o on o.o_id=t.office_id 
+          full join t_auditing f on f.id=t.t_id 
+          where  t.state!='99' and t.office_id=#{officeId}
+    
+    </select>
+    
+  
+	
+	<!-- 6.5.1.1 事项查看-->
+	<select id="queryByItems" parameterType="com.tecsun.sisp.net.modules.entity.request.ItemListBean"
+		resultType="com.tecsun.sisp.net.modules.entity.request.ItemBean">
+		select  id,sxmc,sxbm,sxlx from t_item_message
+		<where>
+			<if test="sxmc !=null and sxmc !='' ">and sxmc=#{sxmc}</if>
+			<if test="sxbm !=null and sxbm !='' ">and sxbm=#{sxbm}</if>
+		</where>
+	</select>
+	
+	<!--  事项查看详细-->
+	<resultMap id="itemVo" type="com.tecsun.sisp.net.modules.entity.response.ItemVo">  
+    <id property="id" column="id"/>  
+    <result property="sxmc" column="sxmc"/>  
+    <result property="sxbm" column="sxbm"/>  
+    <result property="sxlx" column="sxlx"/>  
+    <result property="blbm" column="blbm"/>  
+    <result property="blsj" column="blsj"/>  
+    <result property="sfsf" column="sfsf"/>  
+    <result property="bltj" column="bltj"/>  
+    <result property="sxsm" column="sxsm"/>  
+    <result property="bslc" column="bslc"/>
+    <collection property="informationVos" column="id" ofType="com.tecsun.sisp.net.modules.entity.response.InformationVo">  
+        <id property="cId" column="c_id"/>  
+        <result property="iname" column="iname"/>  
+        <result property="iurl" column="iurl"/>
+    </collection>  
+  </resultMap>  
+	<select id="queryByItemDetails" parameterType="com.tecsun.sisp.net.modules.entity.response.ItemVo" resultMap="itemVo">
+	 select t.id,t.sxmc,t.sxbm,t.sxlx,t.blbm,t.blsj,t.sfsf,t.bltj,t.sxsm,t.bslc,f.iname ,f.c_id,f.iurl from t_item_message t,t_information f
+    where  t.id=#{id} and t.id =f.id
+	
+	</select>
+
+	<!-- 插入文件 -->
+	
+	<insert id="insertFileName" useGeneratedKeys="true" keyColumn="id" keyProperty="id"
+	parameterType="com.tecsun.sisp.net.modules.entity.request.FileBean">
+		 <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">  
+       				SELECT T_FILE_NAME_ID_SEQ.Nextval from DUAL  
+   				</selectKey>
+			insert into t_file_name 
+				<trim prefix="(" suffix=")">
+					ID, FILENAME
+				</trim>
+				values
+				<trim prefix="(" suffix=")">
+				#{id},#{filename}
+				</trim>
+				
+   			
+	</insert>
+	
+	<!-- 事项新增 -->
+	<!-- <sql id="T_ITEM_MESSAGE_NXETVAL">T_ITEM_MESSAGE_ID_SEQ.Nextval</sql> -->
+	<insert id="addPersonMessages" parameterType="com.tecsun.sisp.net.modules.entity.response.ItemVo">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">  
+       		SELECT T_ITEM_MESSAGE_ID_SEQ.Nextval from DUAL  
+   		</selectKey>
+			insert into t_item_message 
+				<trim prefix="(" suffix=")">
+					 id,sxmc, sxbm,sxlx, blbm, blsj,sfsf, bltj,sxsm, bslc
+				</trim>
+				values
+				<trim prefix="(" suffix=")">
+				#{id},
+					#{sxmc},#{sxbm},#{sxlx},#{blbm},#{blsj},#{sfsf},#{bltj},#{sxsm},#{bslc}
+				</trim>
+	</insert>
+	<!--t_information -->
+	<sql id="T_INFORNATION_NXETVAL">T_INFORMATION_ID_SEQ.Nextval</sql>
+	<insert id="addInfornations" parameterType="com.tecsun.sisp.net.modules.entity.response.InformationVo">
+    	insert into  t_information             
+        	<trim prefix="(" suffix=")">
+				c_id, iname, id,iurl
+				</trim>
+				values
+				<trim prefix="(" suffix=")">
+					<include refid="T_INFORNATION_NXETVAL"/>,#{iname},#{id},#{iurl}
+				</trim>		
+	</insert>
+	
+	<!-- 更新事项相关信息 -->
+	<update id="updateByItemDetails" parameterType="com.tecsun.sisp.net.modules.entity.response.ItemVo">
+		 update t_item_message t
+              <trim prefix="set" suffixOverrides="," suffix="where t.id = #{id}" > 
+                 <if test="sxmc != null and sxmc != '' ">  	 t.sxmc = #{sxmc}, </if>
+                 <if test="sxlx != null and sxlx != '' ">   		t.sxlx = #{sxlx}, </if>  
+                 <if test="blbm != null and blbm != '' "> 		 t.blbm = #{blbm}, </if>  
+              	 <if test="blsj != null and blsj != '' ">  	 		t.blsj = #{blsj},</if>
+                 <if test="bslc != null and bslc != '' ">  		 t.bslc = #{bslc}, </if>  
+                 <if test="bltj != null and bltj != '' ">   			  t.bltj = #{bltj},  </if>  
+                 <if test="sxsm != null and sxsm != '' ">  	 t.sxsm = #{sxsm},  </if>
+                <if test="sfsf != null and sfsf != '' ">  		 	  t.sfsf = #{sfsf}, </if>  
+          </trim>
+	
+	</update>
+	
+	<!-- 副表 修改 t_information-->
+	<update id="updateInformation" parameterType="com.tecsun.sisp.net.modules.entity.response.InformationVo">
+		update  t_information f
+		 <trim prefix="set" suffixOverrides="," suffix="where f.c_id= #{cId}" > 
+                 <if test="iname != null and iname != '' ">  f.iname = #{iname}, </if>
+               
+          </trim>
+	</update>
+	
+	<!--事项删除  此处用到级联-->
+	<delete id="deleteItemDetails" parameterType="com.tecsun.sisp.net.modules.entity.response.ItemVo">
+		delete from t_item_message where id=#{id}
+		
+	</delete>
+	
+	<!-- dddddddddddddddddddddddddddddddddddddddddddddddddddddddd -->
+	<!-- 待办事项 -->
+    	<select id="queryByApplyRecord" parameterType="com.tecsun.sisp.net.modules.entity.request.DraftsBean"
+				resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+			select * from (select d.*,o.*,m.*, f.auditor,f.audit_time,f.apply_num,f.reason,g.user_id,( case when d.t_id not in (select c.id from sisp.t_auditing c) then '未处理' when (select c.status from sisp.t_auditing c where c.id=d.t_id)='1' then '同意' when (select c.status from sisp.t_auditing c where c.id=d.t_id)='2' then '不同意' end）status
+			from yth_public_test.t_matter_role g
+			full join yth_test.t_drafts d on g.matter_id=d.business_id
+			full join yth_test.t_item_message m on d.business_id=m.sxbm
+			full join yth_test.t_office_detailed o on o.o_id=d.office_id
+			full join yth_test.t_auditing f on f.id=d.t_id )
+             <where>
+		    			 state!='99' and user_id=#{userId}
+						and state=#{state}
+						<if test="sfzh != null and sfzh != ' ' ">and sfzh=#{sfzh}</if>
+						<if test="tId != null and tId != ' ' ">and t_id=#{tId}</if>
+						<if test="businessId != null and businessId != ' ' ">and business_id=#{businessId}</if>
+						<if test="sxmc != null and sxmc != ' ' ">and sxmc=#{sxmc}</if>
+				</where>
+    	</select>
+    	
+    	<!-- 待办事项查看详细 -->
+    	<select id="queryByApplyRecord2" parameterType="com.tecsun.sisp.net.modules.entity.response.DraftsBean2"
+				resultType="com.tecsun.sisp.net.modules.entity.response.DraftsVo">
+            select * from (select d.*,o.*,m.*, f.auditor,f.audit_time,f.apply_num,f.reason,g.user_id,( case when d.t_id not in (select c.id from sisp.t_auditing c) then '未处理' when (select c.status from sisp.t_auditing c where c.id=d.t_id)='1' then '同意' when (select c.status from sisp.t_auditing c where c.id=d.t_id)='2' then '不同意' end）status
+			from yth_public_test.t_matter_role g
+			full join yth_test.t_drafts d on g.matter_id=d.business_id
+			full join yth_test.t_item_message m on d.business_id=m.sxbm
+			full join yth_test.t_office_detailed o on o.o_id=d.office_id
+			full join yth_test.t_auditing f on f.id=d.t_id )
+             where
+		    			 state!='99'  and  t_id=#{tId}
+				
+    	</select>
+    
+	<!-- 审核开始 -->
+	<!-- 审核相关开始 -->
+		 <update id="updateTimeAndState" parameterType="com.tecsun.sisp.net.modules.entity.response.AuditVo">
+			update t_drafts
+              <trim prefix="set" suffixOverrides="," suffix="where t_id = #{tId} " > 
+                       updatetime=sysdate, state = '0'
+          </trim>
+		</update>
+	
+	<sql id="T_AUDITSEQ">T_AUDITING_ID_SEQ.Nextval</sql>
+	<!-- 添加审核人T_AUDITING_ID_SEQ -->
+	<insert id="insertAudit" parameterType="com.tecsun.sisp.net.modules.entity.response.AuditVo">
+    	insert into  t_auditing             
+        	<trim prefix="(" suffix=")">
+				 ID,AUDITOR,STATUS,APPLY_NUM,REASON,NAME,A_ID
+				</trim>
+				values
+				<trim prefix="(" suffix=")">
+					#{id},#{auditor},#{status},#{applyNum},#{reason},#{name},<include refid="T_AUDITSEQ"/>
+				</trim>		
+	</insert>
+	
+	<!--  审核结束-->
+	
+	<!-- 事项类型查询列表 -->
+	<select id="queryByTmatter"  resultType="com.tecsun.sisp.net.modules.entity.response.MatterVo">
+		   select id, sxmc ,sxbm from t_item_message
+		
+	</select>  
+	
+	<!--查询所有的统筹区名称和编号-->
+	<select id="queryalltcq" resultType="com.tecsun.sisp.net.modules.entity.response.TcqVo">
+		select t.tcqname,t.tcqcode from T_AREA t
+	</select>
+	<!--根据统筹区编码查询单位名称和编码-->
+	<select id="queryunit" parameterType="java.util.Map" resultType="com.tecsun.sisp.net.modules.entity.response.TcqVo">
+		select t.unitname,t.unitcode from T_AREA t where t.tcqcode =#{tcqcode}
+	</select>
+
+	<!--审核的时候修改drafts状态为1或2-->
+	<update id="updateDraftstate" parameterType="java.util.Map">
+		update T_DRAFTS set state=#{state} where t_id=#{id}
+	</update>
+
+	<!--新增事项-->
+	<insert id="additem" parameterType="com.tecsun.sisp.net.modules.entity.request.MatterBean">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			SELECT t_item_message_ID_SEQ.Nextval from DUAL
+		</selectKey>
+		INSERT INTO t_item_message (id,sxmc, sxbm,sxlx, blbm, blsj,sfsf, bltj,sxsm, bslc)
+		VALUES (#{id},#{sxmc},#{sxbm},#{sxlx},#{blbm},#{blsj},#{sfsf},#{bltj},#{sxsm},#{bslc})
+	</insert>
+
+	<!--新增事项的文件-->
+	<insert id="addmatterfile" parameterType="java.util.List">
+		INSERT INTO T_MATTERFILE ( name, matterid,filecode)
+		SELECT  A.* FROM (
+		<foreach collection="list" index="index" item="item" separator="UNION ALL">
+			SELECT  #{item.name} name, #{item.matterid},#{item.filecode} matterid FROM dual
+		</foreach>
+		)A
+	</insert>
+
+	<!--删除事项-->
+	<delete id="deleteitem" parameterType="java.util.Map">
+		DELETE  t_item_message where id =#{id}
+	</delete>
+
+	<!--删除对应事项下的所有文件-->
+	<delete id="deletefiles" parameterType="java.util.Map">
+		DELETE  T_MATTERFILE where matterid =#{matterid}
+	</delete>
+
+	<!--删除事项文件-->
+	<delete id="deletefilebyid" parameterType="java.util.Map">
+		DELETE  T_MATTERFILE where filecode =#{filecode}
+	</delete>
+
+	<!--查询事项列表-->
+	<resultMap id="items" type="com.tecsun.sisp.net.modules.entity.response.ItemMatters">
+		<id property="id" column="id"></id>
+		<result property="sxmc" column="sxmc"></result>
+		<result property="sxbm" column="sxbm"></result>
+		<result property="sxlx" column="sxlx"></result>
+		<result property="blbm" column="blbm"></result>
+		<result property="blsj" column="blsj"></result>
+		<result property="sfsf" column="sfsf"></result>
+		<result property="bltj" column="bltj"></result>
+		<result property="sxsm" column="sxsm"></result>
+		<result property="bslc" column="bslc"></result>
+		<collection property="matterFileList"  ofType="com.tecsun.sisp.net.modules.entity.response.MatterFile">
+			<id property="id" column="mid"></id>
+			<result property="matterid" column="mmatterid"></result>
+			<result property="name" column="mname"></result>
+			<result property="filecode" column="filecode"></result>
+		</collection>
+	</resultMap>
+
+	<select id="getfilecodelist" parameterType="java.util.Map" resultType="String">
+		select m.filecode  from T_ITEM_MESSAGE t LEFT  join T_MATTERFILE m on t.sxbm=m.matterid
+		WHERE t.id=#{id}
+	</select>
+	<!--查询事项列表-->
+	<select id="getitemsbyterm" parameterType="com.tecsun.sisp.net.modules.entity.request.ItemBean"
+			resultMap="items">
+		select t.* ,m.id mid,m.name mname ,m.matterid mmatterid ,m.filecode  from T_ITEM_MESSAGE t LEFT  join T_MATTERFILE m on t.sxbm=m.matterid
+		WHERE 1=1
+		<if test="sxbm !=null and sxbm!='' ">
+		AND t.SXBM like '%' || #{sxbm} || '%'
+		</if>
+		<if test="sxmc !=null and sxmc!='' ">
+			AND t.SXmc like '%' || #{sxmc} || '%'
+		</if>
+		ORDER  by t.id
+	</select>
+
+	<!--修改事项-->
+	<update id="updateitembyid" parameterType="com.tecsun.sisp.net.modules.entity.request.MatterBean">
+		UPDATE T_ITEM_MESSAGE c
+		<set>
+		<if test="sxmc !=null and sxmc !=''"> c.sxmc=#{sxmc}, </if>
+		<if test="sxlx !=null and sxlx !=''"> c.sxlx=#{sxlx},</if>
+		<if test="blbm !=null and blbm !=''"> c.blbm=#{blbm}, </if>
+		<if test="blsj !=null and blsj !=''"> c.blsj=#{blsj}, </if>
+		<if test="sfsf !=null and sfsf !=''"> c.sfsf=#{sfsf}, </if>
+		<if test="bltj !=null and bltj !=''"> c.bltj=#{bltj}, </if>
+		<if test="sxsm !=null and sxsm !=''"> c.sxsm=#{sxsm},</if>
+		<if test="bslc !=null and bslc !=''"> c.bslc=#{bslc}</if>
+	</set>
+		WHERE c.ID=#{id}
+
+	</update>
+
+</mapper>

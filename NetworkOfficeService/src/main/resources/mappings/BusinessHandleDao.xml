@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.net.modules.dao.drafts_sisp.BusinessHandleDao">
+
+	<select id="getBusinessHandlePageByCondition" parameterType="com.tecsun.sisp.net.modules.entity.business.BusinessHandle" resultType="com.tecsun.sisp.net.modules.entity.business.BusinessHandle">
+		<!-- SELECT 
+			BJBH as bjbh,
+			SXBM as sxbm,
+			SXMC as sxmc,
+			SFZH as sfzh,
+			SQSJ as sqsj,
+			DQHJ as dqhj,
+			ZT as zt
+		FROM T_BUSINESS_HANDLE
+		<where>
+		1=1
+			<if test="bjbh != null and bjbh != ''">AND BJBH = #{bjbh}</if>
+			<if test="sxbm != null and sxbm != ''">AND SXBM = #{sxbm}</if>
+			<if test="sxmc != null and sxmc != ''">AND SXMC LIKE '%' || #{sxmc} || '%'</if>
+			<if test="sfzh != null and sfzh != ''">AND SFZH = #{sfzh}</if>
+		</where> -->
+		select 
+		  d.*,
+		  m.*,
+		  o.*,
+		  
+		  d.T_ID AS TID,
+		  D.BUSINESS_ID AS BUSINESSID,
+		  d.OFFICE_ID AS OFFICEID,
+		  m.M_ID AS MID,
+		  O.O_ID AS OID
+		from t_drafts d, t_matter m ,t_office_detailed o 
+		<where>
+			 d.BUSINESS_ID = m.M_ID
+			 and d.OFFICE_ID = o.o_id
+		</where>
+		
+	</select>
+	
+
+</mapper>

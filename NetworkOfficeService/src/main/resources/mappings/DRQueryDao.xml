@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.net.modules.dao.dr.QueryDao">
+
+	<!-- 
+		实在是不知道 
+		 缴费标志为1,
+		 参保状体不为3   知道了,,,,参保状态 1:正常参保 2:暂停参保 3:终止参保
+		 到底是什么意思,,因为之前的查询的sql有这个条件,,,没说清楚代表什么含义,我这里也就只能照搬引用
+		 
+	
+	
+	 -->
+
+	<!-- 个人实缴记录单查询(养老医疗) -->
+	<select id="getGrsjjl" parameterType="com.tecsun.sisp.net.modules.entity.business.QueryVo" resultType="java.util.Map">
+		select 
+	      	substr(aae003,0,4) as ND, <!-- 年度 -->
+	        sum(case when a.AAE210='10' then AAC150 else 0 end) as SUM_AAC150_10,<!-- 缴费基数 _个人 -->
+	        sum(case when a.AAE210='20' then AAC150 else 0 end) as SUM_AAC150_20,<!-- 缴费基数_单位 -->
+	        sum(case when a.AAE210='10' then AAC123 else 0 end) as SUM_AAC123_10,<!-- 实际缴费_个人 -->
+	        sum(case when a.AAE210='20' then AAC123 else 0 end) as SUM_AAC123_20,<!-- 实际缴费_单位 -->
+	        sum(case when a.AAE210='10' then 1 else 0 end) AS YS_10,<!-- 个人缴费月数 -->
+	        sum(case when a.AAE210='20' then 1 else 0 end) AS YS_20 <!-- 单位缴费月数-->
+ 
+    	from 
+    		HBSIMIS_XGJB.ac20 a,
+         	HBSIMIS_XGJB.ac01 b
+		
+		
+		<where>
+			a.AAC001 = b.aac001
+			and a.AAC001 =#{grbh} <!-- 个人编号 -->
+			and a.AAE140 = '11' <!-- 险种 -->
+			and a.aae114 = '1'  <!-- 缴费标志为1 -->
+			<!-- and b.aac031!='3'   参保状体不为3 -->
+		</where>
+		group by substr(a.aae003,0,4)
+		order  by substr(a.aae003,0,4) desc
+	</select>
+	
+	<!-- 个人参保证明查询  TODO   -->
+	<select id="getGrcbzm" resultType="java.util.Map">
+	
+		<!-- TODO  -->
+		select 
+		   a.AAC001,  <!-- 个人编号  -->
+	       a.AAB001,  <!-- 单位编号  -->
+	       a.AAC002,  <!-- 公民身份号码  -->
+	       a.AAC003,  <!-- 姓名  -->
+	       a.AAC004,  <!-- 性别  -->
+	       a.AAC006,  <!-- 出生日期  -->
+	       a.AAC006,  <!-- 参加工作日期  -->
+	       a.AAC031,  <!-- 参保状态  -->
+	       b.AAB004   <!-- 单位名称   -->
+	  from hbsimis_xgjb.ac01 a, hbsimis_xgjb.ab01 b
+	  	<where>
+  			a.AAB001 = b.AAB001
+		 	and a.aac002 = #{idcard}
+	 	</where>
+	</select>
+	
+	<!-- 个人养老保险年账户信息查询 -->
+	<select id="getGrylbxnzhxx" parameterType="com.tecsun.sisp.net.modules.entity.business.QueryVo" resultType="java.util.Map">
+		select 
+		   AAE001, <!-- 账户年度  -->
+	       AIC040, <!-- 截至上年末个人账户单位划拨部分累计本息  -->
+	       AIC077, <!-- 截止上年末个人账户单位划拨部分累计本息在本年产生的利息  -->
+	       AIC420, <!-- 上半年缴费基数和  -->
+	       AIC421, <!-- 下半年缴费基数和  -->
+	       AIC041, <!-- 截止上年末个人账户个人缴费部分累计本息  -->
+	       AIC076, <!-- 截止上年末个人账户个人缴费部分累计本息在本年度产生的利息  -->
+	       AIC058, <!-- 基本养老保险本年账户单位缴费划拨部分本金  -->
+	       AIC059, <!-- 本年缴纳单位划拨部分本年利息  -->
+	       AIC072, <!-- 本年账户个人缴费部分本金  -->
+	       AIC073, <!-- 本年缴纳个人缴费部分本年利息  -->
+	       AIC042, <!-- 截止上年末累计缴费月数  -->
+	       AIC079, <!-- 养老本年缴费月数  -->
+	       AAE036, <!-- 经办日期  -->
+	       AAE120  <!-- 注销标志  -->
+	 	 from HBSIMIS_XGJB.ic02
+		<where>
+			aac001 = #{grbh}
+			<if test="nd !=null and nd !=''">AND AAE001=#{nd} </if>
+		</where>
+		order by AAE001 DESC
+			
+	</select>
+	
+	<!-- 灵活就业人员缴费基数查询 -->
+	<select id="getLhjyryjfjs" parameterType="com.tecsun.sisp.net.modules.entity.business.QueryVo" resultType="java.util.Map">
+		select 
+	        ac.AIC020,<!-- 基本养老保险缴费基数 -->
+	        ac.AKC010,<!-- 基本医疗保险缴费基数 -->
+	        ac.AJC020,<!-- 失业保险缴费基数 -->
+	        ac.ALC001,<!-- 工伤保险缴费基数 -->
+	        ac.AMC001,<!-- 生育保险缴费基数 -->
+	        ac.AAE041,<!-- 开始年月 -->
+	        ac.AAE042 <!-- 终止年月 -->
+
+      from HBSIMIS_XGJB.ac04 ac
+
+     <where>
+     	ac.aac001 = #{grbh}
+     </where>
+      
+      order by aae041 desc
+     
+		
+	</select>
+	
+
+	
+	<!-- 如果需要判断其他险种下是否有多个账户,请修改险种类型,,aae140 -->
+	<!-- 根据身份证号码查询个人编号查询,养老保险 -->
+	<select id="getGrbh" resultType="String">
+		select 
+             distinct aac001
+          from hbsimis_xgjb.ac02 f
+          where aac001 in (
+                select AAC001
+                  from hbsimis_xgjb.ac01 a
+                 where a.aac002 = #{idcard}
+                   and a.aac031 != '3'
+          )
+          and f.AAE140 = #{xz}
+	</select>
+	
+	<!-- 根据个人编号查询个人信息   因为aac001是主键,所以可以这样,必定查询出小于等于1条数据 -->
+	<select id="getGrxxByGrbh" resultType="java.util.Map">
+		select 
+		   a.AAC001,  <!-- 个人编号  -->
+	       a.AAB001,  <!-- 单位编号  -->
+	       a.AAC002,  <!-- 公民身份号码  -->
+	       a.AAC003,  <!-- 姓名  -->
+	       a.AAC004,  <!-- 性别  -->
+	       a.AAC006,  <!-- 出生日期  -->
+	       a.AAC007,  <!-- 参加工作日期  -->
+	       a.AAC031,  <!-- 参保状态  -->
+	       b.AAB004   <!-- 单位名称   -->
+	  from hbsimis_xgjb.ac01 a, hbsimis_xgjb.ab01 b
+	  <where>
+ 	  		a.AAB001 = b.AAB001
+ 	  		<!-- AND a.aac031 != '3' -->
+  			AND a.aac001 = #{grbh}
+	  </where>
+	</select>
+	
+	<!-- 根据身份证号查询个人信息 -->
+	<select id="getGrxxByIdcard" resultType="java.util.Map">
+		select 
+		   a.AAC001,  <!-- 个人编号  -->
+	       a.AAB001,  <!-- 单位编号  -->
+	       a.AAC002,  <!-- 公民身份号码  -->
+	       a.AAC003,  <!-- 姓名  -->
+	       a.AAC004,  <!-- 性别  -->
+	       a.AAC006,  <!-- 出生日期  -->
+	       a.AAC006,  <!-- 参加工作日期  -->
+	       a.AAC031,  <!-- 参保状态  -->
+	       b.AAB004   <!-- 单位名称   -->
+	  from hbsimis_xgjb.ac01 a, hbsimis_xgjb.ab01 b
+	  <where>
+ 	  		a.AAB001 = b.AAB001
+ 	  		AND a.aac031 != '3'
+  			AND a.aac002 = #{idcard}
+	  </where>
+	</select>
+	
+	
+	<!-- 参保日期 -->
+	<select id="getCbrq" resultType="java.lang.String">
+		select min(aae003) from HBSIMIS_XGJB.ac20 
+		<where>
+			AAC001 = #{grbh}
+			and AAE140 = '11' 
+			and aae114 = '1'
+		</where>
+
+	</select>
+	
+	<!-- 缴至年月 -->
+	<select id="getJzny" resultType="java.lang.String">
+				select max(aae003) from HBSIMIS_XGJB.ac20 
+		<where>
+			AAC001 = #{grbh}
+			and AAE140 = '11' 
+			and aae114 = '1'
+		</where>
+	</select>
+
+</mapper>

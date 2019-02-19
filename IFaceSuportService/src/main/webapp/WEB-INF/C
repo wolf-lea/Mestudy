@@ -1,0 +1,19 @@
+ select r.id,r.unit_price,r.amount,
+        r.create_time,r.order_time,r.valid_time,r.status,r.price,r.person_price,r.product_child_id,
+        (select pr.name from t_ap_productdict pr where pr.id=r.product_id) productParentId
+        from t_ap_reserve r where exists(select 1 from t_ap_custarea c where c.user_id=#{userId}
+        and (c.distinct_id=r.orign_province or c.distinct_id=r.orign_city
+        or c.distinct_id=r.orign_district or c.distinct_id=r.orign_town))
+        <if test="productId != null and productId!=''">
+            and r.product_child_id =#{productId}
+        </if>
+        <if test="status != null and status!=''">
+            and r.status =#{status}
+        </if>
+        <if test="timeStart!=null and timeStart!=''">
+            and r.create_time &gt;=to_date(#{timeStart},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="timeEnd!=null and timeEnd!=''">
+            and r.create_time &lt;=to_date(#{timeEnd},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        order by create_time desc

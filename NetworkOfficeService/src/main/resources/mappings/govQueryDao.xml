@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.net.modules.dao.gov.GovQueryDao">
+
+    <!-- 查询列表 -->
+    <select id="getNoticeList"
+            parameterType="com.tecsun.sisp.net.modules.entity.request.GovernmentBean"
+            resultType="com.tecsun.sisp.net.modules.entity.response.GovernmentVO">
+        select n.id,n.title,to_char(n.publish_time, 'yyyy-mm-dd hh24:mi:ss') publishTime,n.publisher,
+        u.info_url as detailUrl
+        from t_yth_news n,t_yth_news_channelcode c
+        left join T_YTH_T_INFOURL u on u.INFO_TYPE = 'news'
+        where PUBLISH_TIME &lt;= sysdate and  n.id=c.new_id
+        <if test="groupId!=null and groupId!=''">
+            and n.type=#{groupId}
+            <if test="code!=null and code!=''">
+                and n.second_type=#{code}
+            </if>
+        </if>
+        <if test="channelcode!=null and channelcode!=''">
+            and c.channelcode=#{channelcode}
+        </if>
+        order by publishtime desc
+    </select>
+
+    <!-- 查看详情 -->
+    <select id="getNoticeDetailById" parameterType="com.tecsun.sisp.net.modules.entity.request.NoticeBean"
+            resultMap="NoticeDetailVOs">
+        select t.id,title,t.second_title,to_char(t.publish_time, 'yyyy-mm-dd hh24:mi:ss') publishTime,t.content,auth,t.publisher,
+        p.file_id ,p.new_id,p.new_file_path
+        from t_yth_news t
+        left join T_YTH_NEWS_PATH p on t.id=p.new_id
+        where t.id=#{id}
+        order by p.create_time desc
+    </select>
+
+    <resultMap id="NoticeDetailVOs" type="com.tecsun.sisp.net.modules.entity.response.NoticeDetailVO">
+        <id property="id" column="id" ></id>
+        <result property="title" column="title" ></result>
+        <result property="secondTitle" column="second_title" ></result>
+        <result property="publishTime" column="publishTime" ></result>
+        <result property="content" column="content" ></result>
+        <result property="auth" column="auth" ></result>
+        <result property="userId" column="user_id" ></result>
+        <result property="publisher" column="publisher" ></result>
+        <collection property="noticePathVOs" ofType="com.tecsun.sisp.net.modules.entity.response.NoticePathVO">
+            <id property="fileId" column="file_id" ></id>
+            <result property="id" column="new_id" ></result>
+            <result property="newFilePath" column="new_file_path" ></result>
+        </collection>
+    </resultMap>
+
+    <select id="getNoticeFileById" parameterType="com.tecsun.sisp.net.modules.entity.response.NoticePathVO"
+            resultType="com.tecsun.sisp.net.modules.entity.response.NoticePathVO">
+        select new_id as id ,file_id,new_file_path
+        from T_YTH_NEWS_PATH p   where  new_id=#{id} and file_id=#{fileId}
+    </select>
+
+</mapper>

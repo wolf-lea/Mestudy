@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:task="http://www.springframework.org/schema/task" xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd"
+       default-lazy-init="true">
+
+    <description>Spring Configuration</description>
+
+    <context:property-placeholder ignore-unresolvable="true" location="classpath:config.properties" />
+
+    <context:component-scan base-package="com.tecsun.sisp.net.modules">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 公服sisp配置数据源 -->
+    <bean id="sispDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.sisp.driverClassName}"/>
+        <property name="url" value="${jdbc.sisp.url}"/>
+        <property name="username" value="${jdbc.sisp.username}"/>
+        <property name="password" value="${jdbc.sisp.password}"/>
+    </bean>
+    <!-- 公服sisp_public配置数据源 -->
+    <bean id="sisppublicDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.sisp_public.driverClassName}"/>
+        <property name="url" value="${jdbc.sisp_public.url}"/>
+        <property name="username" value="${jdbc.sisp_public.username}"/>
+        <property name="password" value="${jdbc.sisp_public.password}"/> 
+    </bean>
+
+    <!-- 一体化sisp_public_yth数据源 -->
+    <bean id="sispPublicYthDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.sisp_public_yth.driverClassName}"/>
+        <property name="url" value="${jdbc.sisp_public_yth.url}"/>
+        <property name="username" value="${jdbc.sisp_public_yth.username}"/>
+        <property name="password" value="${jdbc.sisp_public_yth.password}"/>
+    </bean>
+
+    <!-- 一体化sisp_yth数据源 -->
+    <bean id="sispYthdataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.sisp_yth.driverClassName}"/>
+        <property name="url" value="${jdbc.sisp_public_yth.url}"/>
+        <property name="username" value="${jdbc.sisp_yth.username}"/>
+        <property name="password" value="${jdbc.sisp_yth.password}"/>
+    </bean>
+
+    <!--东软认证信息数据库-->
+    <bean id="drDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.drface.driverClassName}"/>
+        <property name="url" value="${jdbc.drface.url}"/>
+        <property name="username" value="${jdbc.drface.username}"/>
+        <property name="password" value="${jdbc.drface.password}"/>
+    </bean>
+
+    <!-- MyBatis begin -->
+    <!--sisp用户 classpath:/mappings/draftsDAO.xml -->
+    <bean id="sispSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="sispDataSource"/>
+        <property name="mapperLocations" value="classpath:/mappings/draftsDAO.xml"/>
+        <property name="configLocation" value="classpath:/config/mybatis-config.xml"></property>
+    </bean>
+
+    <!--  sisp_public用户"classpath:/mappings/areaDAO.xml"-->
+    <bean id="sispPublicSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="sisppublicDataSource"/>
+        <property name="mapperLocations" value="classpath:/mappings/areaDAO.xml"/>
+        <property name="configLocation" value="classpath:/config/mybatis-config.xml"></property>
+    </bean>
+
+    <!-- 一体化sisp_yth配置 -->
+    <bean id="sispYthSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="sispYthdataSource"/>
+        <property name="mapperLocations" value="classpath:/mappings/govQueryDao.xml"/>
+        <property name="configLocation" value="classpath:/config/mybatis-config.xml"></property>
+    </bean>
+
+    <!--  一体化sispPublicYth配置 -->
+    <bean id="sispPublicYthSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="sispPublicYthDataSource"/>
+        <property name="mapperLocations" value="classpath:/mappings/commQueryDao.xml"/>
+        <property name="configLocation" value="classpath:/config/mybatis-config.xml"></property>
+    </bean>
+
+    <!-- 东软 -->
+    <bean id="drSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="drDataSource" />
+        <property name="mapperLocations" value="classpath:/mappings/DR*.xml"/>
+        <property name="configLocation" value="classpath:/config/mybatis-config.xml"></property>
+    </bean>
+    
+
+    <!-- 扫描basePackage下所有以@MyBatisDao注解的接口-->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sispSqlSessionFactory" />
+        <property name="basePackage" value="com.tecsun.sisp.net.modules.dao.drafts_sisp"/>
+        <property name="annotationClass" value="com.tecsun.sisp.net.common.MyBatisDao"/>
+    </bean>
+    
+    <!--sisp_public  -->
+    <bean id="mapperScannerConfigurer2" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sispPublicSqlSessionFactory" />
+        <property name="basePackage" value="com.tecsun.sisp.net.modules.dao.area_sisppublic"/>
+        <property name="annotationClass" value="com.tecsun.sisp.net.common.MyBatisDao"/>
+    </bean>
+
+    <!-- 一体化sisp_yth数据库扫描-->
+    <bean id="mapperScannerConfigurer3" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sispYthSqlSessionFactory" />
+        <property name="basePackage" value="com.tecsun.sisp.net.modules.dao.gov"/>
+        <property name="annotationClass" value="com.tecsun.sisp.net.common.MyBatisDao"/>
+    </bean>
+
+    <!-- 一体化sisp_public_yth数据库扫描-->
+    <bean id="mapperScannerConfigurer4" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sispPublicYthSqlSessionFactory" />
+        <property name="basePackage" value="com.tecsun.sisp.net.modules.dao.common"/>
+        <property name="annotationClass" value="com.tecsun.sisp.net.common.MyBatisDao"/>
+    </bean>
+
+    <!-- 东软认证数据库 扫描basePackage下所有以@MyBatisDao注解的接口 -->
+    <bean id="mapperScannerConfigurer5" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="drSqlSessionFactory" />
+        <property name="basePackage" value="com.tecsun.sisp.net.modules.dao.dr"/>
+        <property name="annotationClass" value="com.tecsun.sisp.net.common.MyBatisDao"/>
+    </bean>
+    
+   
+    <!-- MBatis end -->
+
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+    <!--spring 事务配置-->
+    <bean id="funtionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="sispDataSource"/>
+        <!--  <property name="sispPublicDataSource" ref="sispPublicDataSource"/> -->
+    </bean>
+    
+    
+    <tx:annotation-driven transaction-manager="funtionManager"/>
+    <!--配置事务传播特性-->
+    <tx:advice id="funViewAdvice" transaction-manager="funtionManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--配置参与事务的类-->
+    <aop:config>
+        <aop:pointcut id="funServicePointcut" expression="execution(* com.tecsun.sisp.net.modules.service.impl..*(..))"/>
+        <aop:advisor pointcut-ref="funServicePointcut" advice-ref="funViewAdvice"/>
+    </aop:config>
+    <!-- 上传文件配置 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    	<property name="maxUploadSize" value="104857600"></property>
+    	<property name="defaultEncoding" value="UTF-8"></property>
+    </bean>
+
+</beans>

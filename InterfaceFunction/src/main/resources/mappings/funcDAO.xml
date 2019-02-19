@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fun.modules.dao.impl.FuncDAO">
+
+  
+	<select id="getAppList"  resultType="com.tecsun.sisp.fun.modules.entity.func.AppIfaceVO"  
+			  parameterType="com.tecsun.sisp.fun.modules.entity.func.AppIfaceVO">
+		select t.id,t.code,t.name,t.create_time as createTime , 
+				 t.update_time as updateTime , t.status,t.description,
+				 t.parent_app_id as parentId
+		 from t_iface_app t where 1=1
+		<if test="id!='' and id!=null">
+			and id=#{id}
+		</if>
+		order by code 
+	</select>
+	
+	<insert id="insertApp" parameterType="com.tecsun.sisp.fun.modules.entity.func.AppIfaceVO" >
+		<selectKey resultType="long" keyProperty="id" order="BEFORE">
+			select t_iface_app_id_seq.nextVal from dual
+		</selectKey>
+		insert into t_iface_app(id,code,name,create_time,update_time,status,description,parent_app_id) 
+		values(#{id},#{code},#{name},#{createTime},#{updateTime},#{status},#{description},#{parentId})
+	</insert>
+	
+	<update id="updateApp" parameterType="com.tecsun.sisp.fun.modules.entity.func.AppIfaceVO" >
+		update t_iface_app set code=#{code},name=#{name},status=#{status},update_time=#{updateTime},description=#{description}
+		where id=#{id}
+	</update>
+	
+	<select id="isExitCodeOrName" parameterType="com.tecsun.sisp.fun.modules.entity.func.AppIfaceVO" 
+			  resultType="com.tecsun.sisp.fun.modules.entity.func.AppIfaceVO">
+		select * from t_iface_app where 1=1 and (code=#{code} or name=#{name} ) 
+			<if test="id!='' and id!=null">
+			and id !=#{id}
+			</if>
+	</select>
+	
+	<delete id="deleteApp" parameterType="long" >
+		delete from  t_iface_app where id=#{id}
+	</delete>
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.net.modules.dao.area_sisppublic.AreaDAO">
+	<!-- 区域字典 -->
+    <sql id="findArea" >DISTINCT_ID,NAME,CODE,PARENT_ID,CREATE_TIME,UPDATE_TIME</sql>
+	<select id="queryByArea" resultType="com.tecsun.sisp.net.modules.entity.response.AreaVo">
+		select <include refid="findArea"/> from t_distinct
+	</select>
+	
+	<!-- 人员状态select * from t_dictionary t where t.groupid='FIVEPERATATUS' -->
+	 <sql id="personstatus">DICTION_ID, NAME,GROUPID,CODE</sql>
+	<select id="queryPersonStatus" parameterType="com.tecsun.sisp.net.modules.entity.request.DictionaryBean" resultType="com.tecsun.sisp.net.modules.entity.response.DictionaryVo">
+		select  <include refid="personstatus"/>  from t_dictionary where groupid=#{groupid} ORDER by diction_id
+	</select> 
+	
+	<!--查询用户  -->
+	<select id="getUserById" parameterType="java.lang.Integer"
+            resultType="com.tecsun.sisp.net.modules.entity.response.UserVO">
+        		select  *  from t_user t where user_id=#{userId}
+    </select>
+	
+	<!-- 获取所有的机构 -->
+	<select id="queryByOrg" resultType="com.tecsun.sisp.net.modules.entity.response.OrgVo">
+		select org_id,org_code,name,parent_org_id,distinct_id from t_org where parent_org_id=#{parentOrgId}
+	</select>
+	
+	
+	<!--保存权限   t.matter_id,t.role_id-->
+	<sql id="T_MATTER_ROLE_NEXTVAL">T_MATTER_ROLE_ID_SEQ.Nextval</sql>
+	<insert id="inserttMatteRole" parameterType="com.tecsun.sisp.net.modules.entity.request.MatterRoleBean">
+    	insert into  t_matter_role             
+        	<trim prefix="(" suffix=")">
+				ID, MATTER_ID,USER_ID
+				</trim>
+				values
+				<trim prefix="(" suffix=")">
+					<include refid="T_MATTER_ROLE_NEXTVAL"/>,#{matterId},#{userId}
+				</trim>
+	</insert>
+	
+	<!-- 用户事项关联显示查询 -->
+	<select id="queryByCorrelation" parameterType="com.tecsun.sisp.net.modules.entity.request.MatterRoleBean"
+			resultType="com.tecsun.sisp.net.modules.entity.request.MatterRoleBean">
+		select  distinct matter_id,user_id from t_matter_role where user_id=#{userId}
+	</select>
+	
+	<!-- 机构id获取机构下的用户 -->
+	<select id="queryByOrgUser" parameterType="com.tecsun.sisp.net.modules.entity.response.OrgUserVo" resultType="com.tecsun.sisp.net.modules.entity.response.OrgUserVo">
+			select * from t_user where org_id=#{orgId}
+	</select>
+	<!-- 用户显示列表-->
+	<select id="queryUserList" parameterType="com.tecsun.sisp.net.modules.entity.response.OrgUserVo" resultType="com.tecsun.sisp.net.modules.entity.response.OrgUserVo">
+			select * from t_user
+	</select>
+
+
+	<!-- 添加用户事项关联数据 -->
+	<insert id="insertMatterAndRole" parameterType="java.util.List">
+		  insert    into  t_matter_role   ( MATTER_ID,USER_ID)
+		SELECT  A.* FROM (
+		<foreach collection="list" index="index" item="item" separator="UNION ALL">
+			SELECT  #{item.matterId} matterId, #{item.userId} userId FROM dual
+		</foreach>
+		)A
+	</insert>
+
+	
+	<!-- 删除用户事项关联 -->
+	<delete id="deleteUserMatter" parameterType="java.util.Map">
+			delete from t_matter_role where user_id=#{userId}
+	</delete>
+
+	<!--查询事项相关和用户对应的id  -->
+	<select id="getMatterRole" parameterType="java.util.Map" 
+		resultType="com.tecsun.sisp.net.modules.entity.response.UserRoleList">
+			select user_Id,matter_id from t_matter_role where matter_id =#{matterId} and user_Id=#{userId}
+	
+	</select>
+
+	<!-- 查询用户事项关联表需要修改 -->
+	<select id="queryByMatterAndRole" parameterType="com.tecsun.sisp.net.modules.entity.response.UserAndRoleVo" 
+	resultType="com.tecsun.sisp.net.modules.entity.response.UserAndRoleVo">
+			select matter_id,user_Id from t_matter_role
+	</select>
+
+
+	<!--根据统筹区编码查询单位名称和编码-->
+	<select id="querydystatus" resultType="com.tecsun.sisp.net.modules.entity.response.DictVO">
+		select t.name,t.code from T_DICTIONARY t where t.groupid ='daiyustatus'
+	</select>
+	
+</mapper>

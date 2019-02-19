@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.fun.modules.dao.impl.UserDAO">
+
+  
+	<select id="getUserList"  resultType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO"  
+			  parameterType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO">
+		select * from t_iface_user where 1=1
+		<if test="userName!='' and userName!=null">
+			and username like '%'||#{userName}||'%'
+		</if>
+		order by id 
+	</select>
+	
+	<select id="userLogin" parameterType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO" 
+			  resultType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO">
+		select * from t_iface_user where   userName=#{userName} and userPwd=#{userPwd}
+	</select>
+	
+	<select id="isExitCodeOrName" parameterType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO" 
+			  resultType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO">
+		select * from t_iface_user where   userName=#{userName} 
+	</select>
+	
+	<select id="getRoleList"  resultType="com.tecsun.sisp.fun.modules.entity.role.RoleIfaceVO" >
+		select * from t_iface_role  order by id 
+	</select>
+	
+	<insert id="insertUser" parameterType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO" >
+		<selectKey resultType="long" keyProperty="id" order="BEFORE">
+			select t_iface_user_id_seq.nextVal from dual
+		</selectKey>
+		insert into t_iface_user
+		values(#{id},#{userName},#{userPwd},#{status},#{createTime},#{updateTime},#{description},#{phone},#{roleNames},#{areaId})
+	</insert>
+	
+	<update id="updateUser" parameterType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO" >
+		update t_iface_user set username=#{userName},status=#{status},updatetime=#{updateTime},
+			description=#{description},phone=#{phone},roleNames=#{roleNames},areaId=#{areaId}
+		where id=#{id}
+	</update>
+	
+	<select id="getUserId"  resultType="long"   parameterType="String">
+		select id from t_iface_user where username=#{userName}
+	</select>
+	
+	<insert id="insertRoleUser" parameterType="com.tecsun.sisp.fun.modules.entity.user.RoleUserIfaceVO" >
+		<selectKey resultType="long" keyProperty="id" order="BEFORE">
+			select t_iface_role_user_id_seq.nextVal from dual
+		</selectKey>
+		insert into t_iface_role_user
+		values(#{id},#{userid},#{roleid},#{createTime},#{updateTime})
+	</insert>
+	
+	<select id="getUserInfo"  resultType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO"   parameterType="long">
+		select * from t_iface_user where id=#{id}
+	</select>
+	
+	<select id="getUserRoleId"  resultType="com.tecsun.sisp.fun.modules.entity.user.RoleUserIfaceVO"   parameterType="long">
+		select * from t_iface_role_user where  userid=#{id} order by id 
+	</select>
+	
+	<delete id="deleteUser" parameterType="long" >
+		delete from  t_iface_user where id=#{id}
+	</delete>
+	
+	<delete id="deleteRoleUser" parameterType="long" >
+		delete from  t_iface_role_user where userid=#{id}
+	</delete>
+	
+	<update id="updateUserPwd" parameterType="com.tecsun.sisp.fun.modules.entity.user.UserIfaceVO" >
+		update t_iface_user set userPwd=#{userPwd} where userName=#{userName}
+	</update>
+	
+	
+	<select id="checkInterfaceUserRoleFunc" parameterType="java.util.Map" 
+	resultType="com.tecsun.sisp.fun.modules.entity.user.InterfaceUserBean">
+		select t1.username as userName , t1.status as userStatus , t3.code as funCode , 
+				 t3.name as funName , t3.status as funStatus 
+		from t_iface_user t1 , t_iface_role t2 , t_iface_app t3 , t_iface_app_role t4, t_iface_role_user t5
+		where t1.id=t5.userid and t2.id=t5.roleid and t2.id=t4.roleid and t3.id= t4.appid 
+		and t1.status = 0 
+		and t1.id=#{userid} and t3.code=#{funCode} and t3.status=0 
+	</select>
+</mapper>

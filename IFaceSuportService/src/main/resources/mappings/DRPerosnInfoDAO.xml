@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tecsun.sisp.iface.server.model.dao_dr.DRPersonInfoDao">
+
+    <resultMap id="DRPersonPO" type="DRPersonPO">
+        <result column="GRBH" property="GRBH"/>
+        <result column="XM" property="XM"/>
+        <result column="XB" property="XB"/>
+        <result column="MZ" property="MZ"/>
+        <result column="CSRQ" property="CSRQ"/>
+        <result column="YLCBSJ" property="YLCBSJ"/>
+        <result column="CYM" property="CYM"/>
+        <result column="JG" property="JG"/>
+        <result column="LTXLB" property="LTXLB"/>
+        <result column="DWBH" property="DWBH"/>
+        <result column="SFZHM" property="SFZHM"/>
+        <result column="RYLB" property="RYLB"/>
+         <result column="TXSJ" property="TXSJ"/>
+         <result column="AAE006" property="AAE006"/>
+    </resultMap>
+
+    <select id="getDRPersonInfo" parameterType="java.util.Map" resultMap="DRPersonPO">
+        select * from ds_personinfo p where p.xm =#{name} and p.sfzhm = #{idCard}
+    </select>
+    
+    <select id="getFafangInfo" parameterType="com.tecsun.sisp.iface.common.vo.faceverify.PersonLoginBean" resultType="com.tecsun.sisp.iface.common.vo.faceverify.FafangInfo">
+    	select * from ds_fafanginfo where grbh=#{grbh}
+    </select>
+    
+    
+    
+   <!--  根据身份证号码、姓名、性别查询需要采集人的信息 -->
+    <select id="getPersonInfoByIdCard" parameterType="com.tecsun.sisp.iface.common.vo.faceverify.RegistBean" resultMap="DRPersonPO">
+        select c.AAE006 as AAE006,p.txsj as TXSJ, p.grbh as GRBH ,p.xm as XM,p.xb as XB ,p.mz as MZ ,p.sfzhm as SFZHM,c.aab004 as DWBH from ds_personinfo p ,hbsimis_xgjb.ab01 c  
+        where  p.dwbh= c.aab001
+          <if test="name != '' and name != null">
+            and  p.xm =#{name}
+           </if>
+           <if test="idCard != '' and idCard != null">
+            and  p.sfzhm =#{idCard}
+           </if>
+            <if test="xb != '' and xb != null">
+            and p.xb =#{xb}
+           </if>
+    </select>
+    
+</mapper>
